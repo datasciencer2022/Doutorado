@@ -36,7 +36,7 @@ td {
                                               Porcentagem de similaridade:
                                            </td>
                                            <td>
-                                                   <input type="number" name="porcentagem" value="90">
+                                                   <input type="number" name="porcentagem" value="90" min="1" max="99">
                                            </td>
                                     </tr>
                                     <tr>	                                            
