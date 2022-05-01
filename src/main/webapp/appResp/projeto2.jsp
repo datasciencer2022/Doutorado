@@ -58,7 +58,17 @@ function voltar() {
 <div role="navigation" class="navbar navbar-default navbar-static-top">
 <div class="container">
 <div class="navbar-header">
-<button data-toggle="offcanvas" class="navbar-toggle" type="button"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button><a class="navbar-brand" href="https://repositorio.unesp.br/"><img src="About%20Reposit%C3%B3rio%20Institucional%20UNESP_files/logo-repositorio.png" alt="RepositÃ³rio Institucional UNESP"></a>
+<table>
+  <tr>
+  	<td><a class="navbar-brand" href="https://repositorio.unesp.br/"><img src="About%20Reposit%C3%B3rio%20Institucional%20UNESP_files/logo-repositorio.png" alt="Repositório Institucional UNESP"></a>
+	</td>
+	
+	<td>
+		<h3><font color = "blue">RILogUser</font></h3>
+	</td>
+  </tr>
+</table>
+
 <div class="navbar-header pull-right visible-xs hidden-sm hidden-md hidden-lg">
 <ul class="nav nav-pills pull-left ">
 <li class="dropdown" id="ds-language-selection-xs">
@@ -135,10 +145,13 @@ function voltar() {
 <div id="aspect_viewArtifacts_Navigation_list_browse" class="list-group">
 <a class="list-group-item active" href="./datasciencer.do?action=callProjeto1"><span class="h5 list-group-item-heading  h5">Coleta, preparação e análise de dados</span></a>
 <a class="list-group-item inactive" href="#"><span class="h5 list-group-item-heading  h5">&nbsp;&nbsp;&nbsp;</span></a>
+<a class="list-group-item active" href="./datasciencer.do?action=disponibilizaAll"><span class="h5 list-group-item-heading  h5">Dados Completos Analisados</span></a>
+<a class="list-group-item inactive" href="#"><span class="h5 list-group-item-heading  h5">&nbsp;&nbsp;&nbsp;</span></a>
 <a class="list-group-item active" href="javascript:voltar()"><span class="h5 list-group-item-heading  h5">Voltar</span></a>
 </div>
-<div align="left">
-<img src = "./images/figuraSite.png" width="120%" heigth="120%">
+<div align="justify">
+<p><strong>Logs de Busca de Usuários e Processamento de Linguagem Natural</strong></p>
+<p>Para a análise dos logs de busca dos usuários dentro de um sistema de recuperação de informações como o RI Unesp, o desenvolvimento de algoritmos capazes de realizar o processamento da linguagem natural dos usuários é de suma importância, haja vista o volume e variedade de registros coletados sem qualquer tratamento ou padronização.</p>
 </div>
 
 <div>
@@ -152,7 +165,7 @@ function voltar() {
 <div class="col-xs-12 col-sm-12 col-md-9 main-content">
 <div>
 <center>
-<h4>Preparação de Dados: Redução da Dimensionalidade</h4>
+<h4>Preparação de Dados: Processamento de Linguagem Natural</h4>
 <hr>
 	<form name="frmDataSciencer01" action="./datasciencer.do" method="POST"
             	enctype="multipart/form-data">

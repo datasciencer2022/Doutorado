@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import java.util.regex.*;
+import java.util.stream.Collectors;
 import java.sql.*;
 import java.text.DecimalFormat;
 import java.text.Normalizer;
@@ -36,6 +37,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import modelo.Arquivo;
 
+import org.apache.commons.collections4.list.TreeList;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -49,7 +51,7 @@ public class DataSciencer extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
 	private int maximumLinhas = 300;
-	private int maximumLinhasProj2 = 2000;
+	private int maximumLinhasProj2 = 5000;
 
 	private String logs = null;
 	private String palavrasChave = null;
@@ -136,6 +138,8 @@ public class DataSciencer extends HttpServlet {
 			rd = request.getRequestDispatcher("/appResp/projeto1.jsp");
 		} else if (action.equals("callProjeto2")) {
 			rd = request.getRequestDispatcher("/appResp/projeto2.jsp");
+		} else if (action.equals("disponibilizaAll")) {
+			rd = request.getRequestDispatcher("/appResp/disponibilizaAll.jsp");
 		}
 		rd.forward(request, response);
 	}
@@ -283,11 +287,50 @@ public class DataSciencer extends HttpServlet {
 			generatedFiles = new ArrayList<String>();
 
 			lerArqRefinamento(arquivoReduz);
-
+			
+			int numDuplicados = 0;
+			int qtdMaior = 0;
+			int qtdMenor = 999999;
+			double extensaoMedia = 0.0;
+			
+			double somaPalavrasPorLinha = 0;
+			int numPalavrasLinha = 0;
 			gerarRefinacoes(porcentagem);
 
+			//Geração de estatísticas
+			
+			List<String> frasesOrdenadas = myListTexto.stream().sorted().collect(Collectors.toList());    
+			String last = "";
+			for (String frase: frasesOrdenadas) {
+				if (last.equals(frase)) {
+					numDuplicados++;
+				}
+				if (frase.contains(" ")) {
+					String[] palavras = frase.split(" ");
+					somaPalavrasPorLinha += palavras.length;
+					numPalavrasLinha = palavras.length;
+				}
+				else {
+					somaPalavrasPorLinha++;
+					numPalavrasLinha = 1;
+				}
+			
+				if (numPalavrasLinha > qtdMaior) qtdMaior = numPalavrasLinha;
+				if (numPalavrasLinha < qtdMenor) qtdMenor = numPalavrasLinha;
+				
+				
+				last = frase;
+			}
+			
+			extensaoMedia = somaPalavrasPorLinha / Double.parseDouble(frasesOrdenadas.size()+"");
+			
+			
 			if (!generatedFiles.isEmpty()) {
 				request.setAttribute("generatedFiles", generatedFiles);
+				request.setAttribute("numDuplicados", numDuplicados);
+				request.setAttribute("extensaoMedia", extensaoMedia);
+				request.setAttribute("qtdMenor", qtdMenor);
+				request.setAttribute("qtdMaior", qtdMaior);
 			}
 			if (!response.isCommitted()) {
 				rd = request.getRequestDispatcher("/appResp/respProj2.jsp");
@@ -336,20 +379,22 @@ public class DataSciencer extends HttpServlet {
 			if (!typeResult.equals("P1")) {
 				// construção dos coincidem
 				for (String cada : inclusive1) {
+					
 					if (inclusive2
 							.contains(Normalizer.normalize(cada, Normalizer.Form.NFD)
 									.replaceAll("\\p{InCombiningDiacriticalMarks}+", "").toUpperCase())
 							&& !exclusive.contains(Normalizer.normalize(cada, Normalizer.Form.NFD)
 									.replaceAll("\\p{InCombiningDiacriticalMarks}+", "").toUpperCase())) {
-						// System.out.println("tem no inclusive 1 e inclusive2 mas não no
+						
 						// exclusive:"+myList.get(cada));
+						
 						coincidem.add(myList.get(cada));
 					}
 				}
 			} else {
 				// construção dos todos juntos
 				for (String cada : inclusive1) {
-
+					
 					if (inclusive2
 							.contains(Normalizer.normalize(cada, Normalizer.Form.NFD)
 									.replaceAll("\\p{InCombiningDiacriticalMarks}+", "").toUpperCase())
@@ -358,6 +403,8 @@ public class DataSciencer extends HttpServlet {
 									.replaceAll("\\p{InCombiningDiacriticalMarks}+", "").toUpperCase())) {
 						// System.out.println("tem no inclusive 1 e inclusive2 e também no
 						// exclusive:"+myList.get(cada));
+						
+						
 						p1Result.add(myList.get(cada));
 					}
 				}
@@ -714,6 +761,8 @@ public class DataSciencer extends HttpServlet {
 					int numLinha = 0;
 					CellStyle estilo = null;
 
+					System.out.println("p1Result tem "+p1Result.size());
+					
 					for (String linha : p1Result) {
 						row = sheetResult.createRow(rownum++);
 						int cellnum = 0;
@@ -772,7 +821,8 @@ public class DataSciencer extends HttpServlet {
 
 					int numLinha = 0;
 					CellStyle estilo = null;
-
+					System.out.println("p1Result tem "+p1Result.size());
+					
 					for (String linha : p1Result) {
 						row = sheetResult.createRow(rownum++);
 						int cellnum = 0;
@@ -810,6 +860,13 @@ public class DataSciencer extends HttpServlet {
 
 			if (!generatedFiles.isEmpty()) {
 				request.setAttribute("generatedFiles", generatedFiles);
+			}
+			
+			if (!coincidem.isEmpty()) {
+				request.setAttribute("coincidentes", coincidem);
+			}
+			if (!p1Result.isEmpty()) {
+				request.setAttribute("coincidentes", p1Result);
 			}
 			if (!response.isCommitted()) {
 				rd = request.getRequestDispatcher("/appResp/respProj1.jsp");
@@ -986,28 +1043,44 @@ public class DataSciencer extends HttpServlet {
 	                       }
 	                	   
 	                	try {
-	                		if (Character.isDigit(frase.charAt(0))) {
-		       	            	//System.out.println("corrigir: "+ frase1);
-		       	            	boolean corrigir = true;
-		       	                while (corrigir) {
-		       	                	frase = frase.substring(1);
-		       	                	if (frase.charAt(0)=='-') {
-		           	    				frase = frase.substring(1);
-		           	    			}
-		       	                	corrigir = Character.isDigit(frase.charAt(0));
-		       	                	//System.out.println("corrigindo: "+ frase1);
-		       	                }
-		       	                frase = frase.trim();
-		       	                //System.out.println("frase analisada: "+frase);
-		       	            }	
+	                		if (!(frase.isEmpty() || frase == null)) {
+	                			if (Character.isDigit(frase.charAt(0))) {
+			       	            	//System.out.println("corrigir: "+ frase1);
+			       	            	boolean corrigir = true;
+			       	                while (corrigir) {
+			       	                	System.out.println(frase);
+			       	                	frase = frase.substring(1);
+			       	                	if (frase.charAt(0)=='-') {
+			           	    				frase = frase.substring(1);
+			           	    			}
+			       	                	corrigir = Character.isDigit(frase.charAt(0));
+			       	                	//System.out.println("corrigindo: "+ frase1);
+			       	                }
+			       	                frase = frase.trim();
+			       	                //System.out.println("frase analisada: "+frase);
+			       	            }	
+	                		}
+	                		else {
+	                			continue;
+	                		}
+	                			
 	                	}
 	                	catch(Exception ex) {
-	                		   System.out.println(ex.getMessage());
+	                		   System.out.println("o erro é na leitura do xlsx "+ ex.getMessage());
 	                	}
 	                	
-	   					if (!myList.containsKey(Normalizer.normalize(frase, Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "").toUpperCase())) {
+	                	
+	                	if (myList.isEmpty()) {
+	                		
 	   						myList.put(Normalizer.normalize(frase, Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "").toUpperCase(), frase);
-	   					}
+	                	}
+	                	else {
+	                		if (!myList.containsKey(Normalizer.normalize(frase, Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "").toUpperCase())) {
+		   						
+		   						myList.put(Normalizer.normalize(frase, Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "").toUpperCase(), frase);
+		   					}	
+	                	}
+	   					
 	   					resposta.add(Normalizer.normalize(frase, Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
 	   			    		    .toUpperCase());	                   
 	   				}
@@ -1039,6 +1112,7 @@ public class DataSciencer extends HttpServlet {
 				frase1 = null;
 				frase1 = Normalizer.normalize(arq1.getLinhaToda(), Normalizer.Form.NFD)
 						.replaceAll("\\p{InCombiningDiacriticalMarks}+", "").toUpperCase();
+				
 				if (!(frase1.isEmpty())) {
 					if (Character.isDigit(frase1.charAt(0))) {
 						// System.out.println("corrigir: "+ frase1);
@@ -1084,6 +1158,7 @@ public class DataSciencer extends HttpServlet {
 							// 2"+arq1.getLinhaToda()+"\t"+arq2.getLinhaToda());
 							if (frase2.equals(frase1)) {
 								// Systen.out.println("É IGUAL");
+								if (frase1.startsWith("Ac"))	System.out.print(frase2+ " frase 2 == frase1");
 								for (Arquivo arq3 : registro3) {
 									if (encerrar) {
 										break;
@@ -1112,6 +1187,7 @@ public class DataSciencer extends HttpServlet {
 											// Systen.out.println("É IGUAL");
 											resposta.add(arq1.getLinhaToda() + "\t" + arq2.getLinhaToda() + "\t"
 													+ arq3.getLinhaToda());
+											if (frase1.startsWith("Ac"))	System.out.print(frase3+ " frase 3 == frase 2 ");
 											// Systen.out.println("adicionado ao P1(joinAll):
 											// "+arq1.getLinhaToda()+"\t"+arq2.getLinhaToda()+"\t"+arq3.getLinhaToda());
 											encerrar = true;
@@ -1165,7 +1241,7 @@ public class DataSciencer extends HttpServlet {
 					}
 
 					if (exclusive.contains(frase1)) {
-						System.out.println("EXCLUIU : " + frase1);
+						//System.out.println("EXCLUIU : " + frase1);
 						continue;
 					}
 
@@ -1194,10 +1270,10 @@ public class DataSciencer extends HttpServlet {
 							}
 
 							if (exclusive.contains(frase2)) {
-								System.out.println("EXCLUIU : " + frase2);
+								//System.out.println("EXCLUIU : " + frase2);
 								continue;
 							}
-							System.out.println("comparou : frase2=" + frase2 + "\tfrase1=" + frase1);
+							
 							if (frase2.equals(frase1)) {
 								System.out.println("ADICIONOU : " + frase2);
 								resposta.add(arq1.getLinhaToda() + "\t" + arq2.getLinhaToda());
@@ -1221,6 +1297,7 @@ public class DataSciencer extends HttpServlet {
 		int cont = 0;
 		String texto = "";
 		String[] textoAux = null;
+		boolean first = true;
 		double contFreq = 0;
 		double numTemp = 0;
 		try {
@@ -1266,41 +1343,47 @@ public class DataSciencer extends HttpServlet {
 			try {
 				while (rowIterator.hasNext()) {
 					Row row = rowIterator.next();
-					Iterator<Cell> cellIterator = row.cellIterator();
+					if (!first) {
+						Iterator<Cell> cellIterator = row.cellIterator();
 
-					while (cellIterator.hasNext()) {
-						Cell cell = cellIterator.next();
-						switch (cell.getCellType()) {
-						case STRING:
-							myListTexto.add(cell.getStringCellValue());
-							myListTextCompare.add(
-									gerarString(Normalizer.normalize(cell.getStringCellValue(), Normalizer.Form.NFD)
-											.replaceAll("\\p{InCombiningDiacriticalMarks}+", "").toUpperCase().trim()));
-							// Systen.out.println("adicionou texto: "+cell.toString());
-							texto = cell.getStringCellValue();
-							break;
-						case NUMERIC:
-							try {
-								numTemp = cell.getNumericCellValue();
-							} catch (Exception e) {
-								System.out.println(e.getMessage());
-								numTemp = 1;
+						while (cellIterator.hasNext()) {
+							Cell cell = cellIterator.next();
+							switch (cell.getCellType()) {
+							case STRING:
+								myListTexto.add(cell.getStringCellValue());
+								myListTextCompare.add(
+										gerarString(Normalizer.normalize(cell.getStringCellValue(), Normalizer.Form.NFD)
+												.replaceAll("\\p{InCombiningDiacriticalMarks}+", "").toUpperCase().trim()));
+								// Systen.out.println("adicionou texto: "+cell.toString());
+								texto = cell.getStringCellValue();
+								break;
+							case NUMERIC:
+								try {
+									numTemp = cell.getNumericCellValue();
+								} catch (Exception e) {
+									System.out.println(e.getMessage());
+									numTemp = 1;
+								}
+								myListQtd.add(numTemp);
+								textoAux = gerarString(texto).split(" ");
+								contFreq = textoAux.length;
+								myListFreq.add(numTemp / contFreq);
+								// Systen.out.println("adicionou numero:"+cell.getNumericCellValue());
+								break;
 							}
-							myListQtd.add(numTemp);
-							textoAux = gerarString(texto).split(" ");
-							contFreq = textoAux.length;
-							myListFreq.add(numTemp / contFreq);
-							// Systen.out.println("adicionou numero:"+cell.getNumericCellValue());
-							break;
+
 						}
 
+						cont++;
+						if (cont > maximumLinhasProj2)
+							break;
 					}
-
-					cont++;
-					if (cont > maximumLinhasProj2)
-						break;
+					else {
+						first = false;
+					}
+	
 				}
-
+					
 			} catch (Exception e) {
 				System.out.println(e.getMessage());
 			}
@@ -1528,7 +1611,7 @@ public class DataSciencer extends HttpServlet {
 
 				try {
 					rand = (int) (10000000 + Math.random() * 90000000);
-					fileName = diretorio + "/RefinamentoTotal_" + porcentagem + "_igual_" + rand + ".xls";
+					fileName = diretorio + "/RefinamentoTotal_" + porcentagem + "%_" + rand + ".xls";
 					FileOutputStream out = new FileOutputStream(new File(fileName));
 					workbook.write(out);
 					out.close();
@@ -1614,7 +1697,7 @@ public class DataSciencer extends HttpServlet {
 
 				try {
 					rand = (int) (10000000 + Math.random() * 90000000);
-					fileName = diretorio + "/RefinamentoTotal_" + porcentagem + "_igual_" + rand + ".xlsx";
+					fileName = diretorio + "/RefinamentoTotal_" + porcentagem + "%_" + rand + ".xlsx";
 					FileOutputStream out = new FileOutputStream(new File(fileName));
 					workbook.write(out);
 					out.close();
@@ -1685,7 +1768,8 @@ public class DataSciencer extends HttpServlet {
 
 				try {
 					rand = (int) (10000000 + Math.random() * 90000000);
-					fileName = diretorio + "/RefinamentoResto_" + resto + "_diferente_" + rand + ".xls";
+					
+					fileName = diretorio + "/RefinamentoResto_" + resto + "%_" + rand + ".xls";
 					FileOutputStream out = new FileOutputStream(new File(fileName));
 					workbook.write(out);
 					out.close();
@@ -1748,7 +1832,7 @@ public class DataSciencer extends HttpServlet {
 
 				try {
 					rand = (int) (10000000 + Math.random() * 90000000);
-					fileName = diretorio + "/RefinamentoResto_" + resto + "_diferente_" + rand + ".xlsx";
+					fileName = diretorio + "/RefinamentoResto_" + resto+ "%_" + rand + ".xlsx";
 					FileOutputStream out = new FileOutputStream(new File(fileName));
 					workbook.write(out);
 					out.close();

@@ -145,9 +145,9 @@ function voltar() {
 </form>
 </div>
 <div id="aspect_viewArtifacts_Navigation_list_browse" class="list-group">
-<a class="list-group-item active" href="./datasciencer.do?action=callProjeto2"><span class="h5 list-group-item-heading  h5">Preparação de dados: processamento de linguagem natural</span></a>
+<a class="list-group-item active" href="./datasciencer.do?action=callProjeto1"><span class="h5 list-group-item-heading  h5">Coleta, preparação e análise de dados</span></a>
 <a class="list-group-item inactive" href="#"><span class="h5 list-group-item-heading  h5">&nbsp;&nbsp;&nbsp;</span></a>
-<a class="list-group-item active" href="./datasciencer.do?action=disponibilizaAll"><span class="h5 list-group-item-heading  h5">Dados Completos Analisados</span></a>
+<a class="list-group-item active" href="./datasciencer.do?action=callProjeto2"><span class="h5 list-group-item-heading  h5">Preparação de dados: processamento de linguagem natural</span></a>
 <a class="list-group-item inactive" href="#"><span class="h5 list-group-item-heading  h5">&nbsp;&nbsp;&nbsp;</span></a>
 <a class="list-group-item active" href="javascript:voltar()"><span class="h5 list-group-item-heading  h5">Voltar</span></a>
 </div>
@@ -160,10 +160,8 @@ function voltar() {
 </div>
 </div>
 <div align="justify">
-<p>Os produtos das comparações entre as listas viabilizam a identificação de conjuntos compostos por elementos comuns, nomeados no diagrama: P1, P2, P3 e P4.
+<p>Organizamos a análise a partir de três listas de vocabulários, cada uma composta por um conjunto de elementos: termos de buscas dos usuários, palavras-chave dos autores e termos do Tesauro Unesp. Os produtos das comparações, seguindo o método foram compostos pelos quantitativos apresentados ao lado, utilizando a ferramenta RILogUser com processamento off-line das listagens de termos:
 </p>
-<img src = "./images/figuraSite.png" width="120%" heigth="120%">
-<p>Onde P1 corresponde à compatibilização dos três conjuntos; P2 corresponde aos termos comuns apenas ao Tesauro e ao vocabulário dos usuários; P3 aos termos comuns apenas ao Tesauro e às palavras-chave dos autores e P4 aos termos comuns apenas às palavras-chave dos autores e aos termos de busca dos usuários.</p>
 </div>
 
 
@@ -173,74 +171,69 @@ function voltar() {
 <div class="col-xs-12 col-sm-12 col-md-9 main-content">
 <div>
 <center>
-<h4>Coleta, Preparação e Análise de Dados</h4>
+<h4>Download de Resultados Completos</h4>
 <hr>
-
-<form name="frmDataSciencer01" action="./datasciencer.do" method="POST"
-            	enctype="multipart/form-data">
-            	<input type="hidden" name = "action" value="parteUpload">
-                	<center>
-								
-	                                    
-                                <table class="text1" style="border-collapse:separate;border-spacing:1em;">
-                                                                    
-                                    <tr>	                                            
-							   			  <td>	                                                   
-                                              Coleta de logs de buscas:
-                                           </td>
-                                           <td>
-                                                   <input type="file" name="logs" class="btn btn-outline-primary" required>
-                                           </td>
-                                        </tr>
-                                        
-                                        <tr>	                                            
-							   			   <td>	                                                   
-                                              Coleta de palavras-chave de autores:
-                                           </td>
-                                           <td>
-                                                   <input type="file" name="palavrasChave"  class="btn btn-outline-primary" required>
-                                           </td>
-                                        </tr>
-                                        
-                                        <tr>	                                            
-							   				<td>	                                                   
-                                              Coleta de termos do Tesauro:
-                                           </td>
-                                           <td>
-                                                   <input type="file" name="tesauro"  class="btn btn-outline-primary" required>
-                                           </td>
-                                        </tr>
-                                    
-                                        <tr>	                                            
-							   				<td>	                                                   
-                                              Vocábulos criados:
-                                           </td>
-                                           <td>
-                                           		<table>
-                                           		   <tr><td>
-                                                   <input type="radio" name="typeResult" value="P1" required checked></td><td> Intersecção de todos (P1)</br>
-                                                   </td></tr>
-                                                   <tr><td>
-                                                   <input type="radio" name="typeResult" value="P2" ></td><td>Termos comuns: logs de busca e termos Tesauro (P2)</br>
-                                                   </td></tr>
-                                                   <tr><td>
-                                                   <input type="radio" name="typeResult" value="P3" ></td><td>Termos comuns: palavras-chave e termos Tesauro (P3)</br>
-                                                   </td></tr>
-                                                   <tr><td>
-                                                   <input type="radio" name="typeResult" value="P4" ></td><td> Termos comuns: logs de busca e palavras-chave (P4)</br>
-                                                   </td></tr>
-                                                  </table>
-                                           </td>
-                                  </tr>
-                                  <tr>	                                            
-							   			  <td colspan="2">	                                                   
-                                              Limite máximo: 300 linhas
-                                           </td>
-                                    </tr>
-                                </table>
-                         <input type="submit"  class="btn btn-primary" value="Preparação e Análise de Dados">
-               		 </center>
-               	</form>
+</br>
+</br>
+		
+		</br>
+		
+		<table>
+			<tr>
+				<td>
+				<form action="./datasciencer.do" method="POST"
+					enctype="multipart/form-data">
+					<input type="hidden" name = "action" value="download">
+					<input type="hidden" name = "fileName" value="/home/riloguser/riloguser.uh-app.com.br/temp/P1_frases_coincidem.xlsx">
+					<input type="submit"  class="btn btn-primary" value="DOWNLOAD">
+				</form>
+				</td>
+				<td align="left">&nbsp;&nbsp;&nbsp;Intersecção de todos (P1)</td>
+			</tr>
+			<tr>
+				<td>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>
+				<form action="./datasciencer.do" method="POST"
+					enctype="multipart/form-data">
+					<input type="hidden" name = "action" value="download">
+					<input type="hidden" name = "fileName" value="/home/riloguser/riloguser.uh-app.com.br/temp/P2_frases_coincidem.xlsx">
+					<input type="submit"  class="btn btn-primary" value="DOWNLOAD">
+				</form>
+				</td>
+				<td align="left">&nbsp;&nbsp;&nbsp;Termos comuns: logs de busca e termos Tesauro (P2)</td>
+			</tr>
+			<tr>
+				<td>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>
+				<form action="./datasciencer.do" method="POST"
+					enctype="multipart/form-data">
+					<input type="hidden" name = "action" value="download">
+					<input type="hidden" name = "fileName" value="/home/riloguser/riloguser.uh-app.com.br/temp/P3_frases_coincidem.xlsx">
+					<input type="submit"  class="btn btn-primary" value="DOWNLOAD">
+				</form>
+				</td>
+				<td align="left">&nbsp;&nbsp;&nbsp;Termos comuns: palavras-chave e termos Tesauro (P3)</td>
+			</tr>
+			<tr>
+				<td>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>
+				<form action="./datasciencer.do" method="POST"
+					enctype="multipart/form-data">
+					<input type="hidden" name = "action" value="download">
+					<input type="hidden" name = "fileName" value="/home/riloguser/riloguser.uh-app.com.br/temp/P4_frases_coincidem.xlsx">
+					<input type="submit"  class="btn btn-primary" value="DOWNLOAD">
+				</form>
+				</td>
+				<td align="left">&nbsp;&nbsp;&nbsp;Termos comuns: logs de busca e palavras-chave (P4)</td>
+			</tr>
+		</table>
+</center>
 </div>
 <div class="visible-xs visible-sm">
 
@@ -263,3 +256,5 @@ function voltar() {
 				</script>
 
 <div><div class="grecaptcha-badge" data-style="bottomright" style="width: 256px; height: 60px; display: block; transition: right 0.3s ease 0s; position: fixed; bottom: 14px; right: -186px; box-shadow: gray 0px 0px 5px; border-radius: 2px; overflow: hidden;"><div class="grecaptcha-logo"><iframe title="reCAPTCHA" src="About%20Reposit%C3%B3rio%20Institucional%20UNESP_files/anchor.html" role="presentation" name="a-arbz0zh4uqys" scrolling="no" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-top-navigation allow-modals allow-popups-to-escape-sandbox allow-storage-access-by-user-activation" width="256" height="60" frameborder="0"></iframe></div><div class="grecaptcha-error"></div><textarea id="g-recaptcha-response-100000" name="g-recaptcha-response" class="g-recaptcha-response" style="width: 250px; height: 40px; border: 1px solid rgb(193, 193, 193); margin: 10px 25px; padding: 0px; resize: none; display: none;"></textarea></div><iframe style="display: none;"></iframe></div></body></html>
+
+

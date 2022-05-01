@@ -1,13 +1,17 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
-<%@ page import="java.util.List"%>
-<%@ page import="java.util.ArrayList"%>
+<%@ page import="java.util.*"%>
 
 <!DOCTYPE html>
 <%
 List<String> generatedFiles = new ArrayList<String>();
 if (request.getAttribute("generatedFiles") != null){
 	generatedFiles = (List<String>) request.getAttribute("generatedFiles");
+}
+
+Set<String> coincidentes = new HashSet<String>();
+if (request.getAttribute("coincidentes") != null){
+	coincidentes = (Set<String>) request.getAttribute("coincidentes");
 }
 %>
 <!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="pt-br"> <![endif]-->
@@ -64,12 +68,23 @@ function voltar() {
     window.history.back()
 }
 </script>
+
 </head><body>
 <header>
 <div role="navigation" class="navbar navbar-default navbar-static-top">
 <div class="container">
 <div class="navbar-header">
-<button data-toggle="offcanvas" class="navbar-toggle" type="button"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button><a class="navbar-brand" href="https://repositorio.unesp.br/"><img src="About%20Reposit%C3%B3rio%20Institucional%20UNESP_files/logo-repositorio.png" alt="RepositÃ³rio Institucional UNESP"></a>
+<table>
+  <tr>
+  	<td><a class="navbar-brand" href="https://repositorio.unesp.br/"><img src="About%20Reposit%C3%B3rio%20Institucional%20UNESP_files/logo-repositorio.png" alt="Repositório Institucional UNESP"></a>
+	</td>
+	
+	<td>
+		<h3><font color = "blue">RILogUser</font></h3>
+	</td>
+  </tr>
+</table>
+
 <div class="navbar-header pull-right visible-xs hidden-sm hidden-md hidden-lg">
 <ul class="nav nav-pills pull-left ">
 <li class="dropdown" id="ds-language-selection-xs">
@@ -145,7 +160,9 @@ function voltar() {
 </form>
 </div>
 <div id="aspect_viewArtifacts_Navigation_list_browse" class="list-group">
-<a class="list-group-item active" href="./datasciencer.do?action=callProjeto2"><span class="h5 list-group-item-heading  h5">Preparação de dados: redução da dimensionalidade</span></a>
+<a class="list-group-item active" href="./datasciencer.do?action=callProjeto2"><span class="h5 list-group-item-heading  h5">Preparação de dados: processamento de linguagem natural</span></a>
+<a class="list-group-item inactive" href="#"><span class="h5 list-group-item-heading  h5">&nbsp;&nbsp;&nbsp;</span></a>
+<a class="list-group-item active" href="./datasciencer.do?action=disponibilizaAll"><span class="h5 list-group-item-heading  h5">Dados Completos Analisados</span></a>
 <a class="list-group-item inactive" href="#"><span class="h5 list-group-item-heading  h5">&nbsp;&nbsp;&nbsp;</span></a>
 <a class="list-group-item active" href="javascript:voltar()"><span class="h5 list-group-item-heading  h5">Voltar</span></a>
 </div>
@@ -188,6 +205,29 @@ function voltar() {
 	}
 
 %>
+</br>
+</br>
+<%
+	if (!coincidentes.isEmpty()){
+		%>
+		<table name="tabela">
+			<tr>
+				<td style="font-weight:bold"><h5>TERMOS COINCIDENTES</h5></td>
+			</tr>
+			<tr>
+				<td>&nbsp;</td>
+			</tr>
+	<%
+		for(String termo: coincidentes){
+		%>
+			<tr>
+				<td style="color:#00F;"><%=termo.toUpperCase() %></td>
+			</tr>
+		<%
+		}
+	}
+	%>
+		</table>
 </center>
 </div>
 <div class="visible-xs visible-sm">

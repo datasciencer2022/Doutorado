@@ -1,3 +1,4 @@
+<%@page import="java.text.DecimalFormat"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
 <%@ page import="java.util.List"%>
@@ -5,10 +6,33 @@
 
 <!DOCTYPE html>
 <%
+
+DecimalFormat formatar = new DecimalFormat("#0.00");
 List<String> generatedFiles = new ArrayList<String>();
 if (request.getAttribute("generatedFiles") != null){
 	generatedFiles = (List<String>) request.getAttribute("generatedFiles");
 }
+
+int numDuplicados = 0;
+if (request.getAttribute("numDuplicados") != null){
+	numDuplicados = (Integer) request.getAttribute("numDuplicados");
+}
+
+double extensaoMedia = 0.0;
+if (request.getAttribute("extensaoMedia") != null){
+	extensaoMedia = (Double) request.getAttribute("extensaoMedia");
+}
+
+int qtdMenor = 0;
+if (request.getAttribute("qtdMenor") != null){
+	qtdMenor = (Integer) request.getAttribute("qtdMenor");
+}
+
+int qtdMaior = 0;
+if (request.getAttribute("qtdMaior") != null){
+	qtdMaior = (Integer) request.getAttribute("qtdMaior");
+}
+
 %>
 <!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="pt-br"> <![endif]-->
 <!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="pt-br"> <![endif]-->
@@ -69,7 +93,17 @@ function voltar() {
 <div role="navigation" class="navbar navbar-default navbar-static-top">
 <div class="container">
 <div class="navbar-header">
-<button data-toggle="offcanvas" class="navbar-toggle" type="button"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button><a class="navbar-brand" href="https://repositorio.unesp.br/"><img src="About%20Reposit%C3%B3rio%20Institucional%20UNESP_files/logo-repositorio.png" alt="RepositÃ³rio Institucional UNESP"></a>
+<table>
+  <tr>
+  	<td><a class="navbar-brand" href="https://repositorio.unesp.br/"><img src="About%20Reposit%C3%B3rio%20Institucional%20UNESP_files/logo-repositorio.png" alt="Repositório Institucional UNESP"></a>
+	</td>
+	
+	<td>
+		<h3><font color = "blue">RILogUser</font></h3>
+	</td>
+  </tr>
+</table>
+
 <div class="navbar-header pull-right visible-xs hidden-sm hidden-md hidden-lg">
 <ul class="nav nav-pills pull-left ">
 <li class="dropdown" id="ds-language-selection-xs">
@@ -147,6 +181,8 @@ function voltar() {
 <div id="aspect_viewArtifacts_Navigation_list_browse" class="list-group">
 <a class="list-group-item active" href="./datasciencer.do?action=callProjeto1"><span class="h5 list-group-item-heading  h5">Coleta, preparação e análise de dados</span></a>
 <a class="list-group-item inactive" href="#"><span class="h5 list-group-item-heading  h5">&nbsp;&nbsp;&nbsp;</span></a>
+<a class="list-group-item active" href="./datasciencer.do?action=disponibilizaAll"><span class="h5 list-group-item-heading  h5">Dados Completos Analisados</span></a>
+<a class="list-group-item inactive" href="#"><span class="h5 list-group-item-heading  h5">&nbsp;&nbsp;&nbsp;</span></a>
 <a class="list-group-item active" href="javascript:voltar()"><span class="h5 list-group-item-heading  h5">Voltar</span></a>
 </div>
 <div align="left">
@@ -188,6 +224,24 @@ function voltar() {
 	}
 
 %>
+		<table>
+			<tr>
+				<td>Número de termos duplicados:</td>
+				<td align="right"><%= numDuplicados %></td>
+			</tr>
+			<tr>
+				<td>Extensão média de palavras:</td>
+				<td align="right"><%= formatar.format(extensaoMedia) %></td>
+			</tr>
+			<tr>
+				<td>Quantidade maior de palavras encontradas em um termo:</td>
+				<td align="right"><%= qtdMaior %></td>
+			</tr>
+			<tr>
+				<td>Quantidade menor de palavras encontradas em um termo:</td>
+				<td align="right"><%= qtdMenor %></td>
+			</tr>
+		</table>
 </center>
 </div>
 <div class="visible-xs visible-sm">
