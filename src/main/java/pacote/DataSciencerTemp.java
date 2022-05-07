@@ -20,7 +20,6 @@ import java.awt.Color;
 import java.io.*;
 import java.lang.*;
 import java.util.*;
-import java.util.Map.Entry;
 
 import org.apache.commons.io.*;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
@@ -48,7 +47,7 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
  * Servlet implementation class DataSciencer
  */
 @WebServlet("/datasciencer.do")
-public class DataSciencer extends HttpServlet {
+public class DataSciencerTemp extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
 	private int maximumLinhas = 300;
@@ -67,26 +66,21 @@ public class DataSciencer extends HttpServlet {
 	private Set<String> p1Result = new HashSet<String>();
 	private Set<String> coincidem = new HashSet<String>();
 	private Map<String, String> myList = new HashMap<String, String>();
-	private Map<Integer, String> mapaText = new HashMap<Integer, String>();
-	private HashMap<Integer, String> mapaTextCompare = new HashMap<Integer,String>();
-	private Map<Integer, Integer> mapaNum = new HashMap<Integer, Integer>();
-	
 	private String tipoPlanilha = "";
 
 	private List<String> myListTexto = new ArrayList<String>();
 	private List<String> myListTextCompare = new ArrayList<String>();
 	private List<String> myListRefinamentoIncluso = new ArrayList<String>();
 	private List<String> resultadosRefinamentoResto = new ArrayList<String>();
-	private List<Double> myListFreq = new ArrayList<Double>();
 	private List<Double> myListNum = new ArrayList<Double>();
+	private List<Double> myListFreq = new ArrayList<Double>();
+	private List<Double> myListQtd = new ArrayList<Double>();
 
 	private List<String[]> resultadosTotais = new ArrayList<String[]>();
 	private List<String[]> resultadosRepetidos = new ArrayList<String[]>();
 	private List<String[]> resultadosRefinamento = new ArrayList<String[]>();
 	private List<String> generatedFiles = new ArrayList<String>();
 
-	private String retiradaCaracteres = null;
-	private String retiradaTermos = null;
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
@@ -98,7 +92,7 @@ public class DataSciencer extends HttpServlet {
 	/**
 	 * @see HttpServlet#HttpServlet()
 	 */
-	public DataSciencer() {
+	public DataSciencerTemp() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
@@ -169,9 +163,6 @@ public class DataSciencer extends HttpServlet {
 		myList = new HashMap<String, String>();
 		tipoPlanilha = "";
 		generatedFiles = new ArrayList<String>();
-		
-		retiradaCaracteres = new String();
-		retiradaTermos = new String();
 
 		RequestDispatcher rd = null;
 		HttpSession session = request.getSession();
@@ -225,14 +216,6 @@ public class DataSciencer extends HttpServlet {
 
 					if (nomeDoCampo.equals("porcentagem")) {
 						porcentagem = Integer.parseInt(valorDoCampo);
-					}
-					
-					if (nomeDoCampo.equals("retiradaCaracteres")) {
-						retiradaCaracteres = valorDoCampo;
-					}
-					
-					if (nomeDoCampo.equals("retiradaTermos")) {
-						retiradaTermos = valorDoCampo;
 					}
 				}
 			}
@@ -294,8 +277,9 @@ public class DataSciencer extends HttpServlet {
 			myListTextCompare = new ArrayList<String>();
 			myListRefinamentoIncluso = new ArrayList<String>();
 			resultadosRefinamentoResto = new ArrayList<String>();
-			myListFreq = new ArrayList<Double>();
 			myListNum = new ArrayList<Double>();
+			myListFreq = new ArrayList<Double>();
+			myListQtd = new ArrayList<Double>();
 
 			resultadosTotais = new ArrayList<String[]>();
 			resultadosRepetidos = new ArrayList<String[]>();
@@ -647,7 +631,7 @@ public class DataSciencer extends HttpServlet {
 					cellTitulo1.setCellStyle(headerStyle);
 					cellTitulo1.setCellValue("Coincidem as frases");
 					sheetResult.autoSizeColumn(0);
-
+					
 					if (typeResult.equals("P4")) {
 						Cell cellTitulo2 = row.createCell(1);
 						cellTitulo2.setCellStyle(headerStyle);
@@ -660,6 +644,7 @@ public class DataSciencer extends HttpServlet {
 					CellStyle estilo = null;
 
 					for (String linha : coincidem) {
+						//System.out.println("linha: "+ linha);
 						if(typeResult.equals("P4")){
 							StringBuilder str = new StringBuilder();
 		                	Set<String> frasesCorrespondentes = new HashSet<String>();
@@ -671,11 +656,11 @@ public class DataSciencer extends HttpServlet {
 		                				boolean pular = false;
 		                				if (tesauro.getPalavrasLinha().size()<2) {
 		                    				String palavraCompare = null;
-		                    				palavraCompare = gerarStringP4(tesauro.getPalavrasLinha().toString());
+		                    				palavraCompare = gerarString(tesauro.getPalavrasLinha().toString());
 		                    				pular = getStopWords(palavraCompare);
 		                    				if (pular) continue;
 		                    				System.out.println("palavraCompare: "+ palavraCompare);
-		                    				if (palavraCompare.equals(gerarStringP4(p))) {
+		                    				if (palavraCompare.equals(gerarString(p))) {
 		                    					frasesCorrespondentes.add(tesauro.getLinhaToda());
 		                    					System.out.println("é igual");
 		                    				}
@@ -683,11 +668,11 @@ public class DataSciencer extends HttpServlet {
 		                    			else {
 		                    				for(String palavraCompare2:tesauro.getPalavrasLinha()) {
 		                    					String palavraCompare = null;
-		                    					palavraCompare = gerarStringP4(palavraCompare2);
+		                    					palavraCompare = gerarString(palavraCompare2);
 		                    					pular = getStopWords(palavraCompare);
 			                    				if (pular) continue;
 		                    					
-		                    					if (palavraCompare.equals(gerarStringP4(p))) {
+		                    					if (palavraCompare.equals(gerarString(p))) {
 		                    						frasesCorrespondentes.add(tesauro.getLinhaToda());
 		                        				}	
 		                    				}
@@ -704,10 +689,10 @@ public class DataSciencer extends HttpServlet {
 		                			boolean pular = false;
 		                			if (tesauro.getPalavrasLinha().size()<2) {
 		                				String palavraCompare = null;
-		                				palavraCompare = gerarStringP4(tesauro.getPalavrasLinha().toString());
+		                				palavraCompare = gerarString(tesauro.getPalavrasLinha().toString());
 		                				pular = getStopWords(palavraCompare);
 	                    				if (pular) continue;
-		                				if (palavraCompare.equals(gerarStringP4(linha))) {
+		                				if (palavraCompare.equals(gerarString(linha))) {
 		                					frasesCorrespondentes.add(tesauro.getLinhaToda());
 		                					//System.out.println("achou correspondente de palavra única: "+ linha+ "\t as frases: "+tesauro.getLinhaToda());              				
 		                				}
@@ -715,10 +700,10 @@ public class DataSciencer extends HttpServlet {
 		                			else {
 		                				for(String palavraCompare2:tesauro.getPalavrasLinha()) {
 		                					String palavraCompare = null;
-		                					palavraCompare = gerarStringP4(palavraCompare2);
+		                					palavraCompare = gerarString(palavraCompare2);
 		                					pular = getStopWords(palavraCompare);
 		                    				if (pular) continue;
-		                					if (palavraCompare.equals(gerarStringP4(linha))) {
+		                					if (palavraCompare.equals(gerarString(linha))) {
 		                    					frasesCorrespondentes.add(tesauro.getLinhaToda());
 		                    					//System.out.println("achou correspondente de palavra única: "+ linha+ "\t as frases: "+tesauro.getLinhaToda());
 		                    				}	
@@ -767,10 +752,9 @@ public class DataSciencer extends HttpServlet {
 							}
 							cellLinha.setCellValue(linha);
 							cellLinha.setCellStyle(estilo);
-							numLinha++;	
-							
+							numLinha++;
+	
 						}
-						
 					}
 
 					try {
@@ -839,10 +823,10 @@ public class DataSciencer extends HttpServlet {
 		                				boolean pular = false;
 		                				if (tesauro.getPalavrasLinha().size()<2) {
 		                    				String palavraCompare = null;
-		                    				palavraCompare = gerarStringP4(tesauro.getPalavrasLinha().toString());
+		                    				palavraCompare = gerarString(tesauro.getPalavrasLinha().toString());
 		                    				pular = getStopWords(palavraCompare);
 		                    				if (pular) continue;
-		                    				if (palavraCompare.equals(gerarStringP4(p))) {
+		                    				if (palavraCompare.equals(gerarString(p))) {
 		                    					frasesCorrespondentes.add(tesauro.getLinhaToda());
 		                    					System.out.print ("gerarString(p): "+ gerarString(p));
 		                    					System.out.print(" é igual ");
@@ -852,14 +836,14 @@ public class DataSciencer extends HttpServlet {
 		                    			else {
 		                    				for(String palavraCompare2:tesauro.getPalavrasLinha()) {
 		                    					String palavraCompare = null;
-		                    					palavraCompare = gerarStringP4(palavraCompare2);
+		                    					palavraCompare = gerarString(palavraCompare2);
 		                    					if (palavraCompare.startsWith("CALCI")){
 		                    						System.out.println("palavraCompare = "+ palavraCompare);
 		                    						System.out.println(" e p = "+ p);
 		                    					}
 		                    					pular = getStopWords(palavraCompare);
 			                    				if (pular) continue;
-		                    					if (palavraCompare.equals(gerarStringP4(p))) {
+		                    					if (palavraCompare.equals(gerarString(p))) {
 		                    						System.out.print ("gerarString(p): "+ gerarString(p));
 		                        					frasesCorrespondentes.add(tesauro.getLinhaToda());
 		                        					System.out.print(" é igual ");
@@ -879,10 +863,10 @@ public class DataSciencer extends HttpServlet {
 		                			boolean pular = false;
 		                			if (tesauro.getPalavrasLinha().size()<2) {
 		                				String palavraCompare = null;
-		                				palavraCompare = gerarStringP4(tesauro.getPalavrasLinha().toString());
+		                				palavraCompare = gerarString(tesauro.getPalavrasLinha().toString());
 		                				pular = getStopWords(palavraCompare);
 	                    				if (pular) continue;
-		                				if (palavraCompare.equals(gerarStringP4(linha))) {
+		                				if (palavraCompare.equals(gerarString(linha))) {
 		                					frasesCorrespondentes.add(tesauro.getLinhaToda());
 		                					//System.out.println("achou correspondente de palavra única: "+ linha+ "\t as frases: "+tesauro.getLinhaToda());              				
 		                				}
@@ -890,10 +874,10 @@ public class DataSciencer extends HttpServlet {
 		                			else {
 		                				for(String palavraCompare2:tesauro.getPalavrasLinha()) {
 		                					String palavraCompare = null;
-		                					palavraCompare = gerarStringP4(palavraCompare2);
+		                					palavraCompare = gerarString(palavraCompare2);
 		                					pular = getStopWords(palavraCompare);
 		                    				if (pular) continue;
-		                					if (palavraCompare.equals(gerarStringP4(linha))) {
+		                					if (palavraCompare.equals(gerarString(linha))) {
 		                    					frasesCorrespondentes.add(tesauro.getLinhaToda());
 		                    					//System.out.println("achou correspondente de palavra única: "+ linha+ "\t as frases: "+tesauro.getLinhaToda());
 		                    				}	
@@ -930,6 +914,7 @@ public class DataSciencer extends HttpServlet {
 							numLinha++;
 	
 						}
+						/********************até aqui só P4 do coincidem*****/
 						else {
 							row = sheetResult.createRow(rownum++);
 							int cellnum = 0;
@@ -941,9 +926,8 @@ public class DataSciencer extends HttpServlet {
 							}
 							cellLinha.setCellValue(linha);
 							cellLinha.setCellStyle(estilo);
-							numLinha++;	
+							numLinha++;
 						}
-						
 					}
 
 					try {
@@ -1557,7 +1541,7 @@ public class DataSciencer extends HttpServlet {
 
 	private void lerArqRefinamento(String arquivo) {
 		int cont = 0;
-		String textCell = "";
+		String texto = "";
 		String[] textoAux = null;
 		boolean first = true;
 		double contFreq = 0;
@@ -1612,15 +1596,11 @@ public class DataSciencer extends HttpServlet {
 							Cell cell = cellIterator.next();
 							switch (cell.getCellType()) {
 							case STRING:
-								textCell = tratamentoCelula(cell.getStringCellValue());
-								mapaText.put(indice, textCell);
-								
-								String textCompare = gerarString( Normalizer.normalize(textCell, Normalizer.Form.NFD)
-										.replaceAll("\\p{InCombiningDiacriticalMarks}+", "").toUpperCase().trim()); 
-								mapaTextCompare.put(indice,textCompare);
-								myListTextCompare.add(textCompare);
-
-								
+								myListTexto.add(cell.getStringCellValue());
+								myListTextCompare.add(
+										gerarString(cell.getStringCellValue().trim()));
+								// Systen.out.println("adicionou texto: "+cell.toString());
+								texto = cell.getStringCellValue();
 								break;
 							case NUMERIC:
 								try {
@@ -1629,12 +1609,11 @@ public class DataSciencer extends HttpServlet {
 									System.out.println(e.getMessage());
 									numTemp = 1;
 								}
-								mapaNum.put(indice, (int) numTemp);
-								myListNum.add(numTemp);
-								textoAux = gerarString(textCell).split(" ");
+								myListQtd.add(numTemp);
+								textoAux = gerarString(texto).split(" ");
 								contFreq = textoAux.length;
 								myListFreq.add(numTemp / contFreq);
-								
+								// Systen.out.println("adicionou numero:"+cell.getNumericCellValue());
 								break;
 							}
 
@@ -1647,7 +1626,7 @@ public class DataSciencer extends HttpServlet {
 					else {
 						first = false;
 					}
-					indice++;
+	
 				}
 					
 			} catch (Exception e) {
@@ -1658,21 +1637,6 @@ public class DataSciencer extends HttpServlet {
 			System.out.println("Ocorreu exceção no lerArqRefinamento: " + e.getMessage());
 		}
 
-	}
-
-	private String tratamentoCelula(String celula) {
-		if (!(retiradaCaracteres == null || retiradaCaracteres.equals(""))) {
-			String splitarray[];
-		    
-		    splitarray = retiradaCaracteres.split("\\s+");
-		    
-		    for (String c: splitarray) {
-		    	if (celula.contains(c)) {
-		    		celula = celula.replace(c, "");
-		    	}
-		    }
-		}
-		return celula;
 	}
 
 	private String gerarString(String termo) {
@@ -1712,50 +1676,10 @@ public class DataSciencer extends HttpServlet {
 				continuar = false;
 			}
 		}
-		return termo;
-	}
-	
-	private String gerarStringP4(String termo) {
-		boolean continuar = true;
-		String parte = "";
-		int pos = 0;
-		int posAfter = 0;
-		while (continuar) {
-			parte = "";
-			if (termo.contains("de"))
-				parte = "de";
-			if (termo.contains("do"))
-				parte = "do";
-			if (termo.contains("da"))
-				parte = "da";
-			if (termo.contains("no"))
-				parte = "no";
-			if (termo.contains("na"))
-				parte = "na";
-			if (termo.contains("em"))
-				parte = "em";
-			if (termo.contains(","))
-				parte = ",";
-			if (termo.contains(" "))
-				parte = " ";
-			if (termo.contains("-"))
-				parte = "-";
-			if (termo.contains("("))
-				parte = "(";
-			if (termo.contains(")"))
-				parte = ")";
-			if (!parte.equals("")) {
-				pos = termo.indexOf(parte);
-				posAfter = pos + parte.length();
-				termo = termo.substring(0, pos) + termo.substring(posAfter);
-			} else {
-				continuar = false;
-			}
-		}
 		return Normalizer.normalize(termo, Normalizer.Form.NFD)
 				.replaceAll("\\p{InCombiningDiacriticalMarks}+", "").toUpperCase();
 	}
-
+	
 	public void gerarRefinacoes(double porcentagem) {
 		// String fileName = "frasesUnicasTodas_oficial.csv";
 
@@ -1771,7 +1695,7 @@ public class DataSciencer extends HttpServlet {
 			double qtd = 0;
 			double tam = 0;
 			double lastTam = 0;
-			double lastNum = 0;
+			double lastQtd = 0;
 			double lastFreq = 0;
 			double contEqual = 0;
 			int rand = 0;
@@ -1780,61 +1704,37 @@ public class DataSciencer extends HttpServlet {
 			String lastCompare = "";
 			boolean first = true;
 
-			Map<Integer, String> sortedSet = sortByValue(mapaTextCompare);
-			
-			for (Map.Entry<Integer,String> entrada : sortedSet.entrySet()) { 
-				System.out.println(entrada.getKey()); 
-				System.out.println(entrada.getValue());
-				
+			for (int contInterno = 0; contInterno < myListTextCompare.size(); contInterno++) {
 				// System.out.println(contInterno+ " de "+myListTextCompare.size());
 				// if (contInterno == 15) break;
 				if (!first) {
-					tam = entrada.getValue().length();
+					tam = myListTextCompare.get(contInterno).length();
 
 					cont++;
 
 					for (int j = 1; j < Math.min(tam, lastTam); j++) {
-						if (lastCompare.substring(0, j).equals(entrada.getValue().substring(0, j))) {
+						if (lastCompare.substring(0, j).equals(myListTextCompare.get(contInterno).substring(0, j))) {
 							contEqual++;
 						} else {
 							break;
 						}
 					}
-					if (!lastCompare.equals(entrada.getValue())) {
-						perc = contEqual / Math.max(tam, lastTam);	
-					}
-					else { 
-						perc=1;
-					}
-					
-					/*
-					if (entrada.getValue().equalsIgnoreCase("fungos")) {
-						
-						System.out.println("da vez: "+ entrada.getValue()+"\t last: "+lastCompare+"\t perc= "+perc+"\t cont= "+cont+"\t soma= "+soma
-								+"\tNum da vez= "+mapaNum.get(entrada.getKey())+"\tlastNum="+lastNum);
-						System.out.println("tam=: "+ tam +"\tlastTam="+lastTam+"\tcontEqual="+contEqual);
-						
-					}
-					*/
-					
+					perc = contEqual / Math.max(tam, lastTam);
+
 					if (cont > 1) {
-						soma = soma + lastNum;
+						soma = soma + lastQtd;
 						freq = freq + lastFreq;
 					} else {
-						soma = lastNum;
+						soma = lastQtd;
 						freq = lastFreq;
 					}
 
 					if (!(perc >= (porcentagem / 100))) {
-						if (myListNum.isEmpty()) {
-							if (!contemPalavraInvalida(last)) {
-								resultadosRefinamento.add(new String[] { last });
-							}
+						if (myListQtd.isEmpty()) {
+							resultadosRefinamento.add(new String[] { last });
 						} else {
-							if (!contemPalavraInvalida(last)) {
-								resultadosRefinamento.add(
-										new String[] { last, soma + "" });
-							}
+							resultadosRefinamento.add(
+									new String[] { last, new DecimalFormat("0.00").format((freq / cont)), soma + "" });
 						}
 
 						// Systen.out.println(last);
@@ -1845,25 +1745,20 @@ public class DataSciencer extends HttpServlet {
 						// Systen.out.println("gravou "+last + "\tfreq: "+(freq/cont));
 						// Systen.out.println("soma: "+soma);
 
-						if (!lastCompare.equals(entrada.getValue())) {
-							cont = 0;
-							soma = 0;
-							perc = 0;
-							freq = 0;	
-						}
-						
+						cont = 0;
+						soma = 0;
+						perc = 0;
+						freq = 0;
 					}
-					
 
 					contEqual = 0;
 				}
-				
-				last = mapaText.get(entrada.getKey());
-				lastCompare = entrada.getValue();
-				lastTam = entrada.getValue().length();
-				if (!myListNum.isEmpty()) {
-					//lastFreq = myListFreq.get(contInterno);
-					lastNum = mapaNum.get(entrada.getKey());
+				last = myListTexto.get(contInterno);
+				lastCompare = myListTextCompare.get(contInterno);
+				lastTam = myListTextCompare.get(contInterno).length();
+				if (!myListQtd.isEmpty()) {
+					lastFreq = myListFreq.get(contInterno);
+					lastQtd = myListQtd.get(contInterno);
 				}
 
 				if (first) {
@@ -1874,18 +1769,14 @@ public class DataSciencer extends HttpServlet {
 			// do the last
 
 			if (perc >= (porcentagem / 100)) {
-				soma = soma + lastNum;
+				soma = soma + lastQtd;
 				freq = freq + lastFreq;
-				if (myListNum.isEmpty()) {
-					if (!contemPalavraInvalida(last)) {
-						resultadosRefinamento.add(new String[] { last });	
-					}
-					
+				if (myListQtd.isEmpty()) {
+					resultadosRefinamento.add(new String[] { last });
 				} else {
-					if (!contemPalavraInvalida(last)) {
-						resultadosRefinamento.add(
-								new String[] { last, (soma == 0 ? lastNum : soma) + "" });	
-					}
+					resultadosRefinamento.add(
+							new String[] { last, new DecimalFormat("0.00").format((freq == 0 ? lastFreq : freq) / cont),
+									(soma == 0 ? lastQtd : soma) + "" });
 				}
 
 				myListRefinamentoIncluso.add(lastCompare);
@@ -1925,14 +1816,12 @@ public class DataSciencer extends HttpServlet {
 					if (resultadosRefinamento.get(0).length > 1) {
 						Cell cellTitulo2 = row.createCell(cellnum++);
 						cellTitulo2.setCellStyle(headerStyle);
-						cellTitulo2.setCellValue("Nº DOCUMENTOS INDEXADOS NO R.I.");
+						cellTitulo2.setCellValue("FREQUENCIA");
 						sheetResult.autoSizeColumn(1);
-						/*
 						Cell cellTitulo3 = row.createCell(cellnum++);
 						cellTitulo3.setCellStyle(headerStyle);
 						cellTitulo3.setCellValue("QUANTIDADE");
 						sheetResult.autoSizeColumn(2);
-						*/
 					}
 				}
 
@@ -1956,11 +1845,11 @@ public class DataSciencer extends HttpServlet {
 						Cell cell2 = row.createCell(cellnum++);
 						cell2.setCellValue(linha[1]);
 						cell2.setCellStyle(estilo);
-						/*
+
 						Cell cell3 = row.createCell(cellnum++);
 						cell3.setCellValue(linha[2]);
 						cell3.setCellStyle(estilo);
-						*/
+
 					}
 
 					numLinha++;
@@ -2013,14 +1902,12 @@ public class DataSciencer extends HttpServlet {
 					if (resultadosRefinamento.get(0).length > 1) {
 						Cell cellTitulo2 = row.createCell(cellnum++);
 						cellTitulo2.setCellStyle(headerStyle);
-						cellTitulo2.setCellValue("Nº DOCUMENTOS INDEXADOS NO R.I.");
+						cellTitulo2.setCellValue("FREQUENCIA");
 						sheetResult.autoSizeColumn(1);
-						/*
 						Cell cellTitulo3 = row.createCell(cellnum++);
 						cellTitulo3.setCellStyle(headerStyle);
 						cellTitulo3.setCellValue("QUANTIDADE");
 						sheetResult.autoSizeColumn(2);
-						*/
 					}
 				}
 
@@ -2044,11 +1931,11 @@ public class DataSciencer extends HttpServlet {
 						Cell cell2 = row.createCell(cellnum++);
 						cell2.setCellValue(linha[1]);
 						cell2.setCellStyle(estilo);
-						/*
+
 						Cell cell3 = row.createCell(cellnum++);
 						cell3.setCellValue(linha[2]);
 						cell3.setCellStyle(estilo);
-						*/
+
 					}
 
 					numLinha++;
@@ -2073,10 +1960,7 @@ public class DataSciencer extends HttpServlet {
 
 			for (int z = 0; z < myListTexto.size(); z++) {
 				if (!myListRefinamentoIncluso.contains(myListTextCompare.get(z))) {
-					if(!contemPalavraInvalida(myListTexto.get(z))) {
-						resultadosRefinamentoResto.add(myListTexto.get(z));	
-					}
-					
+					resultadosRefinamentoResto.add(myListTexto.get(z));
 				}
 			}
 
@@ -2214,55 +2098,4 @@ public class DataSciencer extends HttpServlet {
 
 	}
 
-	private boolean contemPalavraInvalida(String palavra) {
-		boolean resp = false;
-		if (!(retiradaTermos == null || retiradaTermos.equals(""))) {
-			String splitarray[];
-		    
-		    splitarray = retiradaTermos.split("\\s+");
-		    
-		    for (String c: splitarray) {
-		    	if (palavra.contains(c)) {
-		    		resp = true;
-		    	}
-		    }
-		}
-		return resp;
-	}
-/*
-	private Map<String, Integer> sortByValue(Map<String, Integer> unsortMap, final boolean order)
-    {
-        List<Entry<String, Integer>> list = new LinkedList<>(unsortMap.entrySet());
-
-        // Sorting the list based on values
-        list.sort((o1, o2) -> order ? o1.getValue().compareTo(o2.getValue()) == 0
-                ? o1.getKey().compareTo(o2.getKey())
-                : o1.getValue().compareTo(o2.getValue()) : o2.getValue().compareTo(o1.getValue()) == 0
-                ? o2.getKey().compareTo(o1.getKey())
-                : o2.getValue().compareTo(o1.getValue()));
-        return list.stream().collect(Collectors.toMap(Entry::getKey, Entry::getValue, (a, b) -> b, LinkedHashMap::new));
-
-    }
-	*/
-	public static HashMap<Integer, String>  sortByValue(HashMap<Integer, String> hm)
-    {
-        // Create a list from elements of HashMap
-        List<Map.Entry<Integer, String> > list
-            = new LinkedList<Map.Entry<Integer, String> >(
-                hm.entrySet());
- 
-        // Sort the list using lambda expression
-        Collections.sort(
-            list,
-            (i1,
-             i2) -> i1.getValue().compareTo(i2.getValue()));
- 
-        // put data from sorted list to hashmap
-        HashMap<Integer, String> temp
-            = new LinkedHashMap<Integer, String>();
-        for (Map.Entry<Integer, String> aa : list) {
-            temp.put(aa.getKey(), aa.getValue());
-        }
-        return temp;
-    }
 }
