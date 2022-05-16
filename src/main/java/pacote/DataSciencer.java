@@ -54,6 +54,8 @@ public class DataSciencer extends HttpServlet {
 	private int maximumLinhas = 300;
 	private int maximumLinhasProj2 = 5000;
 
+	private String arqCaracteresInvalid = null;
+	private String arqPalavrasInvalid = null;
 	private String logs = null;
 	private String palavrasChave = null;
 	private String tesauro = null;
@@ -65,12 +67,15 @@ public class DataSciencer extends HttpServlet {
 	private Set<String> inclusive2 = new HashSet<String>();
 	private Set<String> exclusive = new HashSet<String>();
 	private Set<String> p1Result = new HashSet<String>();
+	private Set<String> termosExclusivos = new HashSet<String>();
 	private Set<String> coincidem = new HashSet<String>();
 	private Map<String, String> myList = new HashMap<String, String>();
 	private Map<Integer, String> mapaText = new HashMap<Integer, String>();
-	private HashMap<Integer, String> mapaTextCompare = new HashMap<Integer,String>();
+	private HashMap<Integer, String> mapaTextCompare = new HashMap<Integer, String>();
 	private Map<Integer, Integer> mapaNum = new HashMap<Integer, Integer>();
-	
+
+	private static Set<String> cidades = new HashSet<String>();
+
 	private String tipoPlanilha = "";
 
 	private List<String> myListTexto = new ArrayList<String>();
@@ -87,6 +92,7 @@ public class DataSciencer extends HttpServlet {
 
 	private String retiradaCaracteres = null;
 	private String retiradaTermos = null;
+
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
@@ -126,8 +132,13 @@ public class DataSciencer extends HttpServlet {
 		} else if (item.getFieldName().equals("arquivoReduz")) {
 			arquivoReduz = uploadedFile.getAbsolutePath();
 			System.out.println("adicionou: " + uploadedFile.getAbsolutePath());
+		} else if (item.getFieldName().equals("arqCaracteresInvalid")) {
+			arqCaracteresInvalid = uploadedFile.getAbsolutePath();
+			System.out.println("leu arquivo caracteres invalidos: " + uploadedFile.getAbsolutePath());
+		} else if (item.getFieldName().equals("arqPalavrasInvalid")) {
+			arqPalavrasInvalid = uploadedFile.getAbsolutePath();
+			System.out.println("leu arquivo palavras invalidas: " + uploadedFile.getAbsolutePath());
 		}
-
 	}
 
 	/**
@@ -156,20 +167,40 @@ public class DataSciencer extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
+
+		File file = new File(diretorio + "/municipios-brasil.csv"); // creates a new file instance
+		FileReader fr = new FileReader(file); // reads the file
+		BufferedReader br = new BufferedReader(fr); // creates a buffering character input stream
+		// StringBuffer sb=new StringBuffer(); //constructs a string buffer with no
+		// characters
+		String line;
+		Arquivo registro = new Arquivo();
+		while ((line = br.readLine()) != null) {
+			String[] tmp = line.split(";");
+			cidades.add(tmp[4]);
+		}
+
+		br.close();
+		fr.close();
+
 		logs = null;
 		palavrasChave = null;
 		tesauro = null;
 		arquivoReduz = null;
+
+		arqCaracteresInvalid = null;
+		arqPalavrasInvalid = null;
 
 		inclusive1 = new HashSet<String>();
 		inclusive2 = new HashSet<String>();
 		exclusive = new HashSet<String>();
 		p1Result = new HashSet<String>();
 		coincidem = new HashSet<String>();
+		termosExclusivos = new HashSet<String>();
 		myList = new HashMap<String, String>();
 		tipoPlanilha = "";
 		generatedFiles = new ArrayList<String>();
-		
+
 		retiradaCaracteres = new String();
 		retiradaTermos = new String();
 
@@ -205,7 +236,10 @@ public class DataSciencer extends HttpServlet {
 			List<FileItem> items = upload.parseRequest(request);
 			for (FileItem item : items) {
 				if (!item.isFormField()) {
-					processUploadedFile(item);
+					System.out.println("item= " + item.getName());
+					if (!item.getName().isEmpty()) {
+						processUploadedFile(item);
+					}
 				} else {
 					// para inputs que nao sao 'file', isFormField() é verdadeiro
 					String nomeDoCampo = item.getFieldName();
@@ -226,13 +260,14 @@ public class DataSciencer extends HttpServlet {
 					if (nomeDoCampo.equals("porcentagem")) {
 						porcentagem = Integer.parseInt(valorDoCampo);
 					}
-					
+
 					if (nomeDoCampo.equals("retiradaCaracteres")) {
 						retiradaCaracteres = valorDoCampo;
 					}
-					
+
 					if (nomeDoCampo.equals("retiradaTermos")) {
-						retiradaTermos = valorDoCampo;
+						retiradaTermos = Normalizer.normalize(valorDoCampo, Normalizer.Form.NFD)
+								.replaceAll("\\p{InCombiningDiacriticalMarks}+", "").toUpperCase();
 					}
 				}
 			}
@@ -290,6 +325,18 @@ public class DataSciencer extends HttpServlet {
 		}
 
 		if (action.equals("similaridade")) {
+			if (arqCaracteresInvalid != null) {
+				retiradaCaracteres = lerRetirada(arqCaracteresInvalid);
+				// System.out.println ("entrou file retiradaCaracteres: ");
+			}
+
+			if (arqPalavrasInvalid != null) {
+				retiradaTermos = lerRetirada(arqPalavrasInvalid);
+				// System.out.println ("entrou file retiradaTermos: ");
+			}
+
+			// System.out.println ("retiradaCaracteres: "+ retiradaCaracteres);
+			// System.out.println ("retiradaTermos: "+ retiradaTermos);
 			myListTexto = new ArrayList<String>();
 			myListTextCompare = new ArrayList<String>();
 			myListRefinamentoIncluso = new ArrayList<String>();
@@ -303,21 +350,21 @@ public class DataSciencer extends HttpServlet {
 			generatedFiles = new ArrayList<String>();
 
 			lerArqRefinamento(arquivoReduz);
-			
+
 			int numDuplicados = 0;
 			int qtdMaior = 0;
 			int qtdMenor = 999999;
 			double extensaoMedia = 0.0;
-			
+
 			double somaPalavrasPorLinha = 0;
 			int numPalavrasLinha = 0;
 			gerarRefinacoes(porcentagem);
 
-			//Geração de estatísticas
-			
-			List<String> frasesOrdenadas = myListTexto.stream().sorted().collect(Collectors.toList());    
+			// Geração de estatísticas
+
+			List<String> frasesOrdenadas = myListTexto.stream().sorted().collect(Collectors.toList());
 			String last = "";
-			for (String frase: frasesOrdenadas) {
+			for (String frase : frasesOrdenadas) {
 				if (last.equals(frase)) {
 					numDuplicados++;
 				}
@@ -325,22 +372,21 @@ public class DataSciencer extends HttpServlet {
 					String[] palavras = frase.split(" ");
 					somaPalavrasPorLinha += palavras.length;
 					numPalavrasLinha = palavras.length;
-				}
-				else {
+				} else {
 					somaPalavrasPorLinha++;
 					numPalavrasLinha = 1;
 				}
-			
-				if (numPalavrasLinha > qtdMaior) qtdMaior = numPalavrasLinha;
-				if (numPalavrasLinha < qtdMenor) qtdMenor = numPalavrasLinha;
-				
-				
+
+				if (numPalavrasLinha > qtdMaior)
+					qtdMaior = numPalavrasLinha;
+				if (numPalavrasLinha < qtdMenor)
+					qtdMenor = numPalavrasLinha;
+
 				last = frase;
 			}
-			
-			extensaoMedia = somaPalavrasPorLinha / Double.parseDouble(frasesOrdenadas.size()+"");
-			
-			
+
+			extensaoMedia = somaPalavrasPorLinha / Double.parseDouble(frasesOrdenadas.size() + "");
+
 			if (!generatedFiles.isEmpty()) {
 				request.setAttribute("generatedFiles", generatedFiles);
 				request.setAttribute("numDuplicados", numDuplicados);
@@ -355,12 +401,12 @@ public class DataSciencer extends HttpServlet {
 		}
 
 		else if (action.equals("parteUpload")) {
-			String titulo1 = "", titulo2= "", titulo3 = "";
+			String titulo1 = "", titulo2 = "", titulo3 = "";
 			if (typeResult.equals("P1") || typeResult.equals("P4")) {
 				registro1 = lerArq(logs);
 				titulo1 = logs.substring(45);
 				registro2 = lerArq(palavrasChave);
-				titulo2= palavrasChave.substring(45);
+				titulo2 = palavrasChave.substring(45);
 				registro3 = lerArq(tesauro);
 				titulo3 = tesauro.substring(45);
 
@@ -390,27 +436,64 @@ public class DataSciencer extends HttpServlet {
 				inclusive1 = lerArqFraseByFrase(tesauro);
 				inclusive2 = lerArqFraseByFrase(palavrasChave);
 				exclusive = lerArqFraseByFrase(logs);
+			} else if (typeResult.equals("exclusiveLogs")) {
+				// aqui nessa seção o incluive1 é o termo Logs e os demais são os outros
+				// System.out.println("entrou no exclusiveLogs");
+				titulo1 = logs.substring(45);
+				inclusive1 = lerArqFraseByFrase(logs);
+				inclusive2 = lerArqFraseByFrase(tesauro);
+				exclusive = lerArqFraseByFrase(palavrasChave);
+				registro3 = lerArq(tesauro);
+			} else if (typeResult.equals("exclusivePalavrasChave")) {
+				// aqui nessa seção o incluive1 é o termo Palavras Chave e os demais são os
+				// outros
+				titulo1 = palavrasChave.substring(45);
+				inclusive1 = lerArqFraseByFrase(palavrasChave);
+				inclusive2 = lerArqFraseByFrase(tesauro);
+				exclusive = lerArqFraseByFrase(logs);
+				registro3 = lerArq(tesauro);
+			} else if (typeResult.equals("exclusiveTesauro")) {
+				// aqui nessa seção o incluive1 é o termo Tesauro e os demais são os outros
+				titulo1 = tesauro.substring(45);
+				inclusive1 = lerArqFraseByFrase(tesauro);
+				inclusive2 = lerArqFraseByFrase(palavrasChave);
+				exclusive = lerArqFraseByFrase(logs);
 			}
 
-			if (!typeResult.equals("P1")) {
+			if (typeResult.startsWith("exclusive")) {
+				// System.out.println("entrou na seleção dos termos exclusivos");
+				for (String cada : inclusive1) {
+					if (!(inclusive2
+							.contains(Normalizer.normalize(cada, Normalizer.Form.NFD)
+									.replaceAll("\\p{InCombiningDiacriticalMarks}+", "").toUpperCase())
+							|| exclusive.contains(Normalizer.normalize(cada, Normalizer.Form.NFD)
+									.replaceAll("\\p{InCombiningDiacriticalMarks}+", "").toUpperCase()))) {
+
+						// exclusive:"+myList.get(cada));
+
+						termosExclusivos.add(myList.get(cada));
+					}
+				}
+				// System.out.println("número de itens: "+termosExclusivos.size());
+			} else if (!typeResult.equals("P1")) {
 				// construção dos coincidem
 				for (String cada : inclusive1) {
-					
+
 					if (inclusive2
 							.contains(Normalizer.normalize(cada, Normalizer.Form.NFD)
 									.replaceAll("\\p{InCombiningDiacriticalMarks}+", "").toUpperCase())
 							&& !exclusive.contains(Normalizer.normalize(cada, Normalizer.Form.NFD)
 									.replaceAll("\\p{InCombiningDiacriticalMarks}+", "").toUpperCase())) {
-						
+
 						// exclusive:"+myList.get(cada));
-						
+
 						coincidem.add(myList.get(cada));
 					}
 				}
 			} else {
 				// construção dos todos juntos
 				for (String cada : inclusive1) {
-					
+
 					if (inclusive2
 							.contains(Normalizer.normalize(cada, Normalizer.Form.NFD)
 									.replaceAll("\\p{InCombiningDiacriticalMarks}+", "").toUpperCase())
@@ -419,8 +502,7 @@ public class DataSciencer extends HttpServlet {
 									.replaceAll("\\p{InCombiningDiacriticalMarks}+", "").toUpperCase())) {
 						// System.out.println("tem no inclusive 1 e inclusive2 e também no
 						// exclusive:"+myList.get(cada));
-						
-						
+
 						p1Result.add(myList.get(cada));
 					}
 				}
@@ -430,104 +512,7 @@ public class DataSciencer extends HttpServlet {
 
 			Integer rand = (int) (10000000 + Math.random() * 90000000);
 
-			if (tipoPlanilha.equals("H")) {
-				HSSFWorkbook workbook = new HSSFWorkbook();
-				HSSFSheet sheetResult = workbook.createSheet("Resultados");
-
-				int rownum = 0;
-				Row row = sheetResult.createRow(rownum++);
-				int cellnum = 0;
-
-				CellStyle headerStyle = workbook.createCellStyle();
-				headerStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
-				headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-				headerStyle.setAlignment(HorizontalAlignment.CENTER);
-				headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
-
-				CellStyle lineStyle1 = workbook.createCellStyle();
-				lineStyle1.setFillForegroundColor(IndexedColors.GOLD.getIndex());
-				lineStyle1.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-
-				CellStyle lineStyle2 = workbook.createCellStyle();
-				lineStyle1.setFillForegroundColor(IndexedColors.LIGHT_GREEN.getIndex());
-				lineStyle1.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-
-				if (typeResult.equals("P1")) {
-					Cell cellTitulo1 = row.createCell(cellnum++);
-					cellTitulo1.setCellStyle(headerStyle);
-					cellTitulo1.setCellValue(titulo1);
-					sheetResult.autoSizeColumn(0);
-					Cell cellTitulo2 = row.createCell(cellnum++);
-					cellTitulo2.setCellStyle(headerStyle);
-					cellTitulo2.setCellValue(titulo2);
-					sheetResult.autoSizeColumn(1);
-					Cell cellTitulo3 = row.createCell(cellnum++);
-					cellTitulo3.setCellStyle(headerStyle);
-					cellTitulo3.setCellValue(titulo3);
-					sheetResult.autoSizeColumn(2);
-
-					resposta = joinAll(registro1, registro2, registro3);
-				} else {
-					Cell cellTitulo1 = row.createCell(cellnum++);
-					cellTitulo1.setCellStyle(headerStyle);
-					cellTitulo1.setCellValue(titulo1);
-					sheetResult.autoSizeColumn(0);
-					Cell cellTitulo2 = row.createCell(cellnum++);
-					cellTitulo2.setCellStyle(headerStyle);
-					cellTitulo2.setCellValue(titulo2);
-					sheetResult.autoSizeColumn(1);
-					resposta = montarDados(registro1, registro2, exclusive);
-				}
-				int numLinha = 0;
-				CellStyle estilo = null;
-				for (String linha : resposta) {
-					// Systen.out.println("linha #:"+rownum+"\t"+linha);
-					row = sheetResult.createRow(rownum++);
-					if (numLinha % 2 == 0) {
-						estilo = lineStyle1;
-					} else {
-						estilo = lineStyle2;
-					}
-					cellnum = 0;
-					String[] temp = linha.split("\t");
-
-					Cell cell1 = row.createCell(cellnum++);
-					cell1.setCellValue(temp[0]);
-					cell1.setCellStyle(estilo);
-
-					Cell cell2 = row.createCell(cellnum++);
-					cell2.setCellValue(temp[1]);
-					cell2.setCellStyle(estilo);
-
-					if (temp.length == 3) {
-						Cell cell3 = row.createCell(cellnum++);
-						cell3.setCellValue(temp[2]);
-						cell3.setCellStyle(estilo);
-
-					}
-
-					numLinha++;
-				}
-
-				try {
-					rand = (int) (10000000 + Math.random() * 90000000);
-					fileName = diretorio + "/" + typeResult + "_" + rand + ".xls";
-					FileOutputStream out = new FileOutputStream(new File(fileName));
-					workbook.write(out);
-					out.close();
-					generatedFiles.add(fileName);
-				} catch (FileNotFoundException e) {
-					e.printStackTrace();
-					System.out.println("Arquivo não encontrado!");
-				} catch (IOException e) {
-					e.printStackTrace();
-					System.out.println("Erro na edição do arquivo!");
-				}
-				// Systen.out.println("arquivo: "+typeResult+ " gravado");
-
-			}
-
-			else if (tipoPlanilha.equals("X")) {
+			if (typeResult.startsWith("P")) {
 				XSSFWorkbook workbook = new XSSFWorkbook();
 				XSSFSheet sheetResult = workbook.createSheet("Resultados");
 
@@ -564,6 +549,34 @@ public class DataSciencer extends HttpServlet {
 					sheetResult.autoSizeColumn(2);
 
 					resposta = joinAll(registro1, registro2, registro3);
+
+					int numLinha = 0;
+
+					CellStyle estilo = null;
+					for (String linha : resposta) {
+						// Systen.out.println("linha #:"+rownum+"\t"+linha);
+						row = sheetResult.createRow(rownum++);
+						if (numLinha % 2 == 0) {
+							estilo = lineStyle1;
+						} else {
+							estilo = lineStyle2;
+						}
+						cellnum = 0;
+						String[] temp = linha.split("\t");
+						Cell cell1 = row.createCell(cellnum++);
+						cell1.setCellValue(temp[0]);
+						cell1.setCellStyle(estilo);
+						Cell cell2 = row.createCell(cellnum++);
+						cell2.setCellValue(temp[1]);
+						cell2.setCellStyle(estilo);
+						if (temp.length == 3) {
+							Cell cell3 = row.createCell(cellnum++);
+							cell3.setCellValue(temp[2]);
+							cell3.setCellStyle(estilo);
+						}
+						numLinha++;
+					}
+
 				} else {
 					Cell cellTitulo1 = row.createCell(cellnum++);
 					cellTitulo1.setCellStyle(headerStyle);
@@ -574,32 +587,33 @@ public class DataSciencer extends HttpServlet {
 					cellTitulo2.setCellValue(titulo2);
 					sheetResult.autoSizeColumn(1);
 					resposta = montarDados(registro1, registro2, exclusive);
-				}
-				int numLinha = 0;
+					int numLinha = 0;
 
-				CellStyle estilo = null;
-				for (String linha : resposta) {
-					// Systen.out.println("linha #:"+rownum+"\t"+linha);
-					row = sheetResult.createRow(rownum++);
-					if (numLinha % 2 == 0) {
-						estilo = lineStyle1;
-					} else {
-						estilo = lineStyle2;
+					CellStyle estilo = null;
+					for (String linha : resposta) {
+						// Systen.out.println("linha #:"+rownum+"\t"+linha);
+						row = sheetResult.createRow(rownum++);
+						if (numLinha % 2 == 0) {
+							estilo = lineStyle1;
+						} else {
+							estilo = lineStyle2;
+						}
+						cellnum = 0;
+						String[] temp = linha.split("\t");
+						Cell cell1 = row.createCell(cellnum++);
+						cell1.setCellValue(temp[0]);
+						cell1.setCellStyle(estilo);
+						Cell cell2 = row.createCell(cellnum++);
+						cell2.setCellValue(temp[1]);
+						cell2.setCellStyle(estilo);
+						if (temp.length == 3) {
+							Cell cell3 = row.createCell(cellnum++);
+							cell3.setCellValue(temp[2]);
+							cell3.setCellStyle(estilo);
+						}
+						numLinha++;
 					}
-					cellnum = 0;
-					String[] temp = linha.split("\t");
-					Cell cell1 = row.createCell(cellnum++);
-					cell1.setCellValue(temp[0]);
-					cell1.setCellStyle(estilo);
-					Cell cell2 = row.createCell(cellnum++);
-					cell2.setCellValue(temp[1]);
-					cell2.setCellStyle(estilo);
-					if (temp.length == 3) {
-						Cell cell3 = row.createCell(cellnum++);
-						cell3.setCellValue(temp[2]);
-						cell3.setCellStyle(estilo);
-					}
-					numLinha++;
+
 				}
 
 				try {
@@ -617,389 +631,447 @@ public class DataSciencer extends HttpServlet {
 					e.printStackTrace();
 					System.out.println("Erro na edição do arquivo!");
 				}
+				// System.out.println("arquivo: "+typeResult+ " gravado");
+
+			}
+
+			List<String> coincidemOrdenados = new ArrayList<String>();
+
+			if (!coincidem.isEmpty()) {
+				// System.out.println("entrou no coincidem que tem nº elementos:
+				// "+coincidem.size());
+
+				XSSFWorkbook workbook = new XSSFWorkbook();
+				XSSFSheet sheetResult = workbook.createSheet("Coincidem as frases");
+				CellStyle headerStyle = workbook.createCellStyle();
+				headerStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+				headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+				headerStyle.setAlignment(HorizontalAlignment.CENTER);
+				headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+
+				CellStyle lineStyle1 = workbook.createCellStyle();
+				lineStyle1.setFillForegroundColor(IndexedColors.GOLD.getIndex());
+				lineStyle1.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+				CellStyle lineStyle2 = workbook.createCellStyle();
+				lineStyle1.setFillForegroundColor(IndexedColors.LIGHT_GREEN.getIndex());
+				lineStyle1.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+				int rownum = 0;
+				Row row = sheetResult.createRow(rownum++);
+
+				Cell cellTitulo1 = row.createCell(0);
+				cellTitulo1.setCellStyle(headerStyle);
+				cellTitulo1.setCellValue("Coincidem as frases");
+				sheetResult.autoSizeColumn(0);
+
+				if (typeResult.equals("P4")) {
+					Cell cellTitulo2 = row.createCell(1);
+					cellTitulo2.setCellStyle(headerStyle);
+					cellTitulo2.setCellValue("Termos Relacionados ao Tesauro");
+					sheetResult.autoSizeColumn(1);
+				}
+				int numLinha = 0;
+				CellStyle estilo = null;
+
+				// ordena os coincidem
+
+				coincidemOrdenados = coincidem.stream().sorted().collect(Collectors.toList());
+
+				for (String linha : coincidemOrdenados) {
+					if (typeResult.equals("P4")) {
+						StringBuilder str = new StringBuilder();
+						Set<String> frasesCorrespondentes = new HashSet<String>();
+						if (linha.contains(" ")) {
+							String[] palavras = linha.split(" ");
+							for (String p : palavras) {
+
+								for (Arquivo tesauro : registro3) {
+
+									boolean pular = false;
+									if (tesauro.getPalavrasLinha().size() < 2) {
+										String palavraCompare = null;
+										palavraCompare = gerarStringP4(tesauro.getPalavrasLinha().toString());
+										pular = getStopWords(palavraCompare);
+										if (pular)
+											continue;
+										if (palavraCompare.equals(gerarStringP4(p))) {
+											frasesCorrespondentes.add(tesauro.getLinhaToda());
+											// System.out.print ("gerarString(p): "+ gerarString(p));
+											// System.out.print(" é igual ");
+											// System.out.println(" a palavraCompare: "+ palavraCompare);
+										}
+									} else {
+										for (String palavraCompare2 : tesauro.getPalavrasLinha()) {
+											String palavraCompare = null;
+											palavraCompare = gerarStringP4(palavraCompare2);
+											/*
+											 * if (palavraCompare.startsWith("CALCI")){
+											 * System.out.println("palavraCompare = "+ palavraCompare);
+											 * System.out.println(" e p = "+ p); }
+											 */
+											pular = getStopWords(palavraCompare);
+											if (pular)
+												continue;
+											if (palavraCompare.equals(gerarStringP4(p))) {
+												// System.out.print ("gerarString(p): "+ gerarString(p));
+												frasesCorrespondentes.add(tesauro.getLinhaToda());
+												// System.out.print(" é igual ");
+												// System.out.println(" a palavraCompare: "+ palavraCompare);
+											}
+										}
+									}
+								}
+							}
+							for (String frase : frasesCorrespondentes) {
+								str.append(frase + " / ");
+							}
+						} else {
+
+							for (Arquivo tesauro : registro3) {
+								boolean pular = false;
+								if (tesauro.getPalavrasLinha().size() < 2) {
+									String palavraCompare = null;
+									palavraCompare = gerarStringP4(tesauro.getPalavrasLinha().toString());
+									pular = getStopWords(palavraCompare);
+									if (pular)
+										continue;
+									if (palavraCompare.equals(gerarStringP4(linha))) {
+										frasesCorrespondentes.add(tesauro.getLinhaToda());
+										// System.out.println("achou correspondente de palavra única: "+ linha+ "\t as
+										// frases: "+tesauro.getLinhaToda());
+									}
+								} else {
+									for (String palavraCompare2 : tesauro.getPalavrasLinha()) {
+										String palavraCompare = null;
+										palavraCompare = gerarStringP4(palavraCompare2);
+										pular = getStopWords(palavraCompare);
+										if (pular)
+											continue;
+										if (palavraCompare.equals(gerarStringP4(linha))) {
+											frasesCorrespondentes.add(tesauro.getLinhaToda());
+											// System.out.println("achou correspondente de palavra única: "+ linha+ "\t
+											// as frases: "+tesauro.getLinhaToda());
+										}
+									}
+								}
+							}
+
+							for (String frase : frasesCorrespondentes) {
+								str.append(frase + " / ");
+							}
+						}
+						row = sheetResult.createRow(rownum++);
+						int cellnum = 0;
+						Cell cellLinha = row.createCell(cellnum);
+						if (numLinha % 2 == 0) {
+							estilo = lineStyle1;
+						} else {
+							estilo = lineStyle2;
+						}
+						cellLinha.setCellValue(linha);
+						cellLinha.setCellStyle(estilo);
+						if (str.length() > 3) {
+							cellnum = 1;
+							Cell cellLinha2 = row.createCell(cellnum);
+							if (numLinha % 2 == 0) {
+								estilo = lineStyle1;
+							} else {
+								estilo = lineStyle2;
+							}
+							cellLinha2.setCellValue(str.toString().substring(0, str.lastIndexOf("/")));
+							cellLinha2.setCellStyle(estilo);
+						}
+
+						numLinha++;
+
+					} else {
+						row = sheetResult.createRow(rownum++);
+						int cellnum = 0;
+						Cell cellLinha = row.createCell(cellnum);
+						if (numLinha % 2 == 0) {
+							estilo = lineStyle1;
+						} else {
+							estilo = lineStyle2;
+						}
+						cellLinha.setCellValue(linha);
+						cellLinha.setCellStyle(estilo);
+						numLinha++;
+					}
+
+				}
+
+				try {
+					rand = (int) (10000000 + Math.random() * 90000000);
+					fileName = diretorio + "/" + typeResult + "_coincidem_" + rand + ".xlsx";
+					FileOutputStream out = new FileOutputStream(new File(fileName));
+					workbook.write(out);
+					out.close();
+					generatedFiles.add(fileName);
+
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+					System.out.println("Arquivo não encontrado!");
+				} catch (IOException e) {
+					e.printStackTrace();
+					System.out.println("Erro na edição do arquivo!");
+				}
 				// Systen.out.println("arquivo: "+typeResult+ " gravado");
 
 			}
 
-			if (!coincidem.isEmpty()) {
+			List<String> p1ResultOrdenados = new ArrayList<String>();
+			if (!p1Result.isEmpty() && typeResult.equals("P1")) {
+				// System.out.println("entrou no p1Result que tem nº elementos:
+				// "+p1Result.size());
+				XSSFWorkbook workbook = new XSSFWorkbook();
+				XSSFSheet sheetResult = workbook.createSheet("Frases comuns a todos os conjuntos");
+				CellStyle headerStyle = workbook.createCellStyle();
+				headerStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+				headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+				headerStyle.setAlignment(HorizontalAlignment.CENTER);
+				headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
 
-				if (tipoPlanilha.equals("H")) {
-					HSSFWorkbook workbook = new HSSFWorkbook();
-					HSSFSheet sheetResult = workbook.createSheet("Coincidem as frases");
-					CellStyle headerStyle = workbook.createCellStyle();
-					headerStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
-					headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-					headerStyle.setAlignment(HorizontalAlignment.CENTER);
-					headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+				CellStyle lineStyle1 = workbook.createCellStyle();
+				lineStyle1.setFillForegroundColor(IndexedColors.GOLD.getIndex());
+				lineStyle1.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
-					CellStyle lineStyle1 = workbook.createCellStyle();
-					lineStyle1.setFillForegroundColor(IndexedColors.GOLD.getIndex());
-					lineStyle1.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+				CellStyle lineStyle2 = workbook.createCellStyle();
+				lineStyle1.setFillForegroundColor(IndexedColors.LIGHT_GREEN.getIndex());
+				lineStyle1.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
-					CellStyle lineStyle2 = workbook.createCellStyle();
-					lineStyle1.setFillForegroundColor(IndexedColors.LIGHT_GREEN.getIndex());
-					lineStyle1.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+				int rownum = 0;
+				Row row = sheetResult.createRow(rownum++);
 
-					int rownum = 0;
-					Row row = sheetResult.createRow(rownum++);
+				Cell cellTitulo1 = row.createCell(0);
+				cellTitulo1.setCellStyle(headerStyle);
+				cellTitulo1.setCellValue("Coincidem as frases");
+				sheetResult.autoSizeColumn(0);
 
-					Cell cellTitulo1 = row.createCell(0);
-					cellTitulo1.setCellStyle(headerStyle);
-					cellTitulo1.setCellValue("Coincidem as frases");
-					sheetResult.autoSizeColumn(0);
+				int numLinha = 0;
+				CellStyle estilo = null;
+				// System.out.println("p1Result tem "+p1Result.size());
 
-					if (typeResult.equals("P4")) {
-						Cell cellTitulo2 = row.createCell(1);
-						cellTitulo2.setCellStyle(headerStyle);
-						/***************************************************/					cellTitulo2.setCellValue("Termos Relacionados ao Tesauro");
-						sheetResult.autoSizeColumn(1);	
+				// ordena os p1Result
+				p1ResultOrdenados = p1Result.stream().sorted().collect(Collectors.toList());
+
+				for (String linha : p1ResultOrdenados) {
+					row = sheetResult.createRow(rownum++);
+					int cellnum = 0;
+					Cell cellLinha = row.createCell(cellnum);
+					if (numLinha % 2 == 0) {
+						estilo = lineStyle1;
+					} else {
+						estilo = lineStyle2;
 					}
-					
-					
-					int numLinha = 0;
-					CellStyle estilo = null;
-
-					for (String linha : coincidem) {
-						if(typeResult.equals("P4")){
-							StringBuilder str = new StringBuilder();
-		                	Set<String> frasesCorrespondentes = new HashSet<String>();
-		                	if (linha.contains(" ")) {
-		                		String[] palavras = linha.split(" ");
-		                		for (String p:palavras) {
-		                			System.out.println("palavra: "+ p);
-		                			for(Arquivo tesauro: registro3) {
-		                				boolean pular = false;
-		                				if (tesauro.getPalavrasLinha().size()<2) {
-		                    				String palavraCompare = null;
-		                    				palavraCompare = gerarStringP4(tesauro.getPalavrasLinha().toString());
-		                    				pular = getStopWords(palavraCompare);
-		                    				if (pular) continue;
-		                    				System.out.println("palavraCompare: "+ palavraCompare);
-		                    				if (palavraCompare.equals(gerarStringP4(p))) {
-		                    					frasesCorrespondentes.add(tesauro.getLinhaToda());
-		                    					System.out.println("é igual");
-		                    				}
-		                    			}
-		                    			else {
-		                    				for(String palavraCompare2:tesauro.getPalavrasLinha()) {
-		                    					String palavraCompare = null;
-		                    					palavraCompare = gerarStringP4(palavraCompare2);
-		                    					pular = getStopWords(palavraCompare);
-			                    				if (pular) continue;
-		                    					
-		                    					if (palavraCompare.equals(gerarStringP4(p))) {
-		                    						frasesCorrespondentes.add(tesauro.getLinhaToda());
-		                        				}	
-		                    				}
-		                    			}
-		                			}
-		                		}
-		                		for (String frase: frasesCorrespondentes) {
-		                			str.append(frase+" / ");	
-		                		}
-		                	}
-		                	else {
-		                		
-		                		for(Arquivo tesauro: registro3) {
-		                			boolean pular = false;
-		                			if (tesauro.getPalavrasLinha().size()<2) {
-		                				String palavraCompare = null;
-		                				palavraCompare = gerarStringP4(tesauro.getPalavrasLinha().toString());
-		                				pular = getStopWords(palavraCompare);
-	                    				if (pular) continue;
-		                				if (palavraCompare.equals(gerarStringP4(linha))) {
-		                					frasesCorrespondentes.add(tesauro.getLinhaToda());
-		                					//System.out.println("achou correspondente de palavra única: "+ linha+ "\t as frases: "+tesauro.getLinhaToda());              				
-		                				}
-		                			}
-		                			else {
-		                				for(String palavraCompare2:tesauro.getPalavrasLinha()) {
-		                					String palavraCompare = null;
-		                					palavraCompare = gerarStringP4(palavraCompare2);
-		                					pular = getStopWords(palavraCompare);
-		                    				if (pular) continue;
-		                					if (palavraCompare.equals(gerarStringP4(linha))) {
-		                    					frasesCorrespondentes.add(tesauro.getLinhaToda());
-		                    					//System.out.println("achou correspondente de palavra única: "+ linha+ "\t as frases: "+tesauro.getLinhaToda());
-		                    				}	
-		                				}
-		                			}
-		            			}
-		                		
-		                		for (String frase: frasesCorrespondentes) {
-		                			str.append(frase+" / ");	
-		                		}
-		                	}
-		                	row = sheetResult.createRow(rownum++);
-							int cellnum = 0;
-							Cell cellLinha = row.createCell(cellnum);
-							if (numLinha % 2 == 0) {
-								estilo = lineStyle1;
-							} else {
-								estilo = lineStyle2;
-							}
-							cellLinha.setCellValue(linha);
-							cellLinha.setCellStyle(estilo);
-							
-							if(str.length()>=3) {
-								cellnum = 1;
-								Cell cellLinha2 = row.createCell(cellnum);
-								if (numLinha % 2 == 0) {
-									estilo = lineStyle1;
-								} else {
-									estilo = lineStyle2;
-								}
-								cellLinha2.setCellValue(str.toString().substring(0,str.lastIndexOf("/")));
-								cellLinha2.setCellStyle(estilo);	
-							}
-							
-							numLinha++;
-	
-						}
-						else {
-							row = sheetResult.createRow(rownum++);
-							int cellnum = 0;
-							Cell cellLinha = row.createCell(cellnum);
-							if (numLinha % 2 == 0) {
-								estilo = lineStyle1;
-							} else {
-								estilo = lineStyle2;
-							}
-							cellLinha.setCellValue(linha);
-							cellLinha.setCellStyle(estilo);
-							numLinha++;	
-							
-						}
-						
-					}
-
-					try {
-						rand = (int) (10000000 + Math.random() * 90000000);
-						fileName = diretorio + "/" + typeResult + "_coincidem_" + rand + ".xls";
-						FileOutputStream out = new FileOutputStream(new File(fileName));
-						workbook.write(out);
-						out.close();
-						generatedFiles.add(fileName);
-
-					} catch (FileNotFoundException e) {
-						e.printStackTrace();
-						System.out.println("Arquivo não encontrado!");
-					} catch (IOException e) {
-						e.printStackTrace();
-						System.out.println("Erro na edição do arquivo!");
-					}
-					// Systen.out.println("arquivo: "+typeResult+ " gravado");
-
+					cellLinha.setCellValue(linha);
+					cellLinha.setCellStyle(estilo);
+					numLinha++;
 				}
 
-				else if (tipoPlanilha.equals("X")) {
-					XSSFWorkbook workbook = new XSSFWorkbook();
-					XSSFSheet sheetResult = workbook.createSheet("Coincidem as frases");
-					CellStyle headerStyle = workbook.createCellStyle();
-					headerStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
-					headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-					headerStyle.setAlignment(HorizontalAlignment.CENTER);
-					headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+				try {
+					rand = (int) (10000000 + Math.random() * 90000000);
+					fileName = diretorio + "/" + typeResult + "_comuns_a_todos_" + rand + ".xlsx";
+					FileOutputStream out = new FileOutputStream(new File(fileName));
+					workbook.write(out);
+					out.close();
+					generatedFiles.add(fileName);
 
-					CellStyle lineStyle1 = workbook.createCellStyle();
-					lineStyle1.setFillForegroundColor(IndexedColors.GOLD.getIndex());
-					lineStyle1.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-
-					CellStyle lineStyle2 = workbook.createCellStyle();
-					lineStyle1.setFillForegroundColor(IndexedColors.LIGHT_GREEN.getIndex());
-					lineStyle1.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-
-					int rownum = 0;
-					Row row = sheetResult.createRow(rownum++);
-
-					Cell cellTitulo1 = row.createCell(0);
-					cellTitulo1.setCellStyle(headerStyle);
-					cellTitulo1.setCellValue("Coincidem as frases");
-					sheetResult.autoSizeColumn(0);
-
-					if (typeResult.equals("P4")) {
-						Cell cellTitulo2 = row.createCell(1);
-						cellTitulo2.setCellStyle(headerStyle);
-						cellTitulo2.setCellValue("Termos Relacionados ao Tesauro");
-						sheetResult.autoSizeColumn(1);	
-					}
-					int numLinha = 0;
-					CellStyle estilo = null;
-
-					for (String linha : coincidem) {
-						if(typeResult.equals("P4")){
-							StringBuilder str = new StringBuilder();
-		                	Set<String> frasesCorrespondentes = new HashSet<String>();
-		                	if (linha.contains(" ")) {
-		                		String[] palavras = linha.split(" ");
-		                		for (String p:palavras) {
-		                			
-		                			for(Arquivo tesauro: registro3) {
-		                			
-		                				boolean pular = false;
-		                				if (tesauro.getPalavrasLinha().size()<2) {
-		                    				String palavraCompare = null;
-		                    				palavraCompare = gerarStringP4(tesauro.getPalavrasLinha().toString());
-		                    				pular = getStopWords(palavraCompare);
-		                    				if (pular) continue;
-		                    				if (palavraCompare.equals(gerarStringP4(p))) {
-		                    					frasesCorrespondentes.add(tesauro.getLinhaToda());
-		                    					System.out.print ("gerarString(p): "+ gerarString(p));
-		                    					System.out.print(" é igual ");
-	                        					System.out.println(" a palavraCompare: "+ palavraCompare);
-		                    				}
-		                    			}
-		                    			else {
-		                    				for(String palavraCompare2:tesauro.getPalavrasLinha()) {
-		                    					String palavraCompare = null;
-		                    					palavraCompare = gerarStringP4(palavraCompare2);
-		                    					if (palavraCompare.startsWith("CALCI")){
-		                    						System.out.println("palavraCompare = "+ palavraCompare);
-		                    						System.out.println(" e p = "+ p);
-		                    					}
-		                    					pular = getStopWords(palavraCompare);
-			                    				if (pular) continue;
-		                    					if (palavraCompare.equals(gerarStringP4(p))) {
-		                    						System.out.print ("gerarString(p): "+ gerarString(p));
-		                        					frasesCorrespondentes.add(tesauro.getLinhaToda());
-		                        					System.out.print(" é igual ");
-		                        					System.out.println(" a palavraCompare: "+ palavraCompare);
-		                        				}	
-		                    				}
-		                    			}
-		                			}
-		                		}
-		                		for (String frase: frasesCorrespondentes) {
-		                			str.append(frase+" / ");	
-		                		}
-		                	}
-		                	else {
-		                		
-		                		for(Arquivo tesauro: registro3) {
-		                			boolean pular = false;
-		                			if (tesauro.getPalavrasLinha().size()<2) {
-		                				String palavraCompare = null;
-		                				palavraCompare = gerarStringP4(tesauro.getPalavrasLinha().toString());
-		                				pular = getStopWords(palavraCompare);
-	                    				if (pular) continue;
-		                				if (palavraCompare.equals(gerarStringP4(linha))) {
-		                					frasesCorrespondentes.add(tesauro.getLinhaToda());
-		                					//System.out.println("achou correspondente de palavra única: "+ linha+ "\t as frases: "+tesauro.getLinhaToda());              				
-		                				}
-		                			}
-		                			else {
-		                				for(String palavraCompare2:tesauro.getPalavrasLinha()) {
-		                					String palavraCompare = null;
-		                					palavraCompare = gerarStringP4(palavraCompare2);
-		                					pular = getStopWords(palavraCompare);
-		                    				if (pular) continue;
-		                					if (palavraCompare.equals(gerarStringP4(linha))) {
-		                    					frasesCorrespondentes.add(tesauro.getLinhaToda());
-		                    					//System.out.println("achou correspondente de palavra única: "+ linha+ "\t as frases: "+tesauro.getLinhaToda());
-		                    				}	
-		                				}
-		                			}
-		            			}
-		                		
-		                		for (String frase: frasesCorrespondentes) {
-		                			str.append(frase+" / ");	
-		                		}
-		                	}
-		                	row = sheetResult.createRow(rownum++);
-							int cellnum = 0;
-							Cell cellLinha = row.createCell(cellnum);
-							if (numLinha % 2 == 0) {
-								estilo = lineStyle1;
-							} else {
-								estilo = lineStyle2;
-							}
-							cellLinha.setCellValue(linha);
-							cellLinha.setCellStyle(estilo);
-							if(str.length()>=3) {
-								cellnum = 1;
-								Cell cellLinha2 = row.createCell(cellnum);
-								if (numLinha % 2 == 0) {
-									estilo = lineStyle1;
-								} else {
-									estilo = lineStyle2;
-								}
-								cellLinha2.setCellValue(str.toString().substring(0,str.lastIndexOf("/")));
-								cellLinha2.setCellStyle(estilo);	
-							}
-							
-							numLinha++;
-	
-						}
-						else {
-							row = sheetResult.createRow(rownum++);
-							int cellnum = 0;
-							Cell cellLinha = row.createCell(cellnum);
-							if (numLinha % 2 == 0) {
-								estilo = lineStyle1;
-							} else {
-								estilo = lineStyle2;
-							}
-							cellLinha.setCellValue(linha);
-							cellLinha.setCellStyle(estilo);
-							numLinha++;	
-						}
-						
-					}
-
-					try {
-						rand = (int) (10000000 + Math.random() * 90000000);
-						fileName = diretorio + "/" + typeResult + "_coincidem_" + rand + ".xlsx";
-						FileOutputStream out = new FileOutputStream(new File(fileName));
-						workbook.write(out);
-						out.close();
-						generatedFiles.add(fileName);
-
-					} catch (FileNotFoundException e) {
-						e.printStackTrace();
-						System.out.println("Arquivo não encontrado!");
-					} catch (IOException e) {
-						e.printStackTrace();
-						System.out.println("Erro na edição do arquivo!");
-					}
-					// Systen.out.println("arquivo: "+typeResult+ " gravado");
-
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+					System.out.println("Arquivo não encontrado!");
+				} catch (IOException e) {
+					e.printStackTrace();
+					System.out.println("Erro na edição do arquivo!");
 				}
+				// Systen.out.println("arquivo: "+typeResult+ " gravado");
 
 			}
 
-			if (!p1Result.isEmpty() && typeResult.equals("P1")) {
+			List<String> termosExclusivosOrdenados = new ArrayList<String>();
 
-				if (tipoPlanilha.equals("H")) {
-					HSSFWorkbook workbook = new HSSFWorkbook();
-					HSSFSheet sheetResult = workbook.createSheet("Frases comuns a todos os conjuntos");
-					CellStyle headerStyle = workbook.createCellStyle();
-					headerStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
-					headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-					headerStyle.setAlignment(HorizontalAlignment.CENTER);
-					headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+			if (!termosExclusivos.isEmpty() && !typeResult.startsWith("P")) {
+				// System.out.println("entrou no termosExclusivos que tem nº elementos:
+				// "+termosExclusivos.size());
+				XSSFWorkbook workbook = new XSSFWorkbook();
+				XSSFSheet sheetResult = workbook.createSheet("Termos exclusivos");
+				CellStyle headerStyle = workbook.createCellStyle();
+				headerStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+				headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+				headerStyle.setAlignment(HorizontalAlignment.CENTER);
+				headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
 
-					CellStyle lineStyle1 = workbook.createCellStyle();
-					lineStyle1.setFillForegroundColor(IndexedColors.GOLD.getIndex());
-					lineStyle1.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+				CellStyle lineStyle1 = workbook.createCellStyle();
+				lineStyle1.setFillForegroundColor(IndexedColors.GOLD.getIndex());
+				lineStyle1.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
-					CellStyle lineStyle2 = workbook.createCellStyle();
-					lineStyle1.setFillForegroundColor(IndexedColors.LIGHT_GREEN.getIndex());
-					lineStyle1.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+				CellStyle lineStyle2 = workbook.createCellStyle();
+				lineStyle1.setFillForegroundColor(IndexedColors.LIGHT_GREEN.getIndex());
+				lineStyle1.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
-					int rownum = 0;
-					Row row = sheetResult.createRow(rownum++);
+				int rownum = 0;
+				Row row = sheetResult.createRow(rownum++);
 
-					Cell cellTitulo1 = row.createCell(0);
-					cellTitulo1.setCellStyle(headerStyle);
-					cellTitulo1.setCellValue("Frases comuns a todos os conjuntos");
-					sheetResult.autoSizeColumn(0);
+				Cell cellTitulo1 = row.createCell(0);
+				cellTitulo1.setCellStyle(headerStyle);
+				if (typeResult.contains("esauro")) {
+					cellTitulo1.setCellValue("Termos exclusivos");
+				} else {
+					cellTitulo1.setCellValue("Palavras exclusivas");
+					Cell cellTitulo2 = row.createCell(1);
+					cellTitulo2.setCellStyle(headerStyle);
+					cellTitulo2.setCellValue("Parte das Palavras Relacionadas ao Tesauro Unesp");
+				}
 
-					int numLinha = 0;
-					CellStyle estilo = null;
+				sheetResult.autoSizeColumn(0);
 
-					System.out.println("p1Result tem "+p1Result.size());
-					
-					for (String linha : p1Result) {
+				int numLinha = 0;
+				CellStyle estilo = null;
+
+				// ordena os termosExclusivos
+				termosExclusivosOrdenados = termosExclusivos.stream().sorted().collect(Collectors.toList());
+
+				/***************** adição da nova feature ************/
+
+				for (String linha : termosExclusivosOrdenados) {
+					if (!typeResult.contains("esauro")) {
+						StringBuilder str = new StringBuilder();
+						Set<String> frasesCorrespondentes = new HashSet<String>();
+						if (linha.contains(" ")) {
+							String[] palavras = linha.split(" ");
+							for (String p : palavras) {
+
+								for (Arquivo tesauro : registro3) {
+
+									boolean pular = false;
+									if (tesauro.getPalavrasLinha().size() < 2) {
+										String palavraCompare = null;
+										palavraCompare = gerarStringP4(tesauro.getPalavrasLinha().toString());
+										pular = getStopWords(palavraCompare);
+										if (pular)
+											continue;
+										if (palavraCompare.equals(gerarStringP4(p))) {
+											frasesCorrespondentes.add(tesauro.getLinhaToda());
+											// System.out.print ("gerarString(p): "+ gerarString(p));
+											// System.out.print(" é igual ");
+											// System.out.println(" a palavraCompare: "+ palavraCompare);
+										}
+									} else {
+										for (String palavraCompare2 : tesauro.getPalavrasLinha()) {
+											String palavraCompare = null;
+											palavraCompare = gerarStringP4(palavraCompare2);
+											/*
+											 * if (palavraCompare.startsWith("CALCI")){
+											 * System.out.println("palavraCompare = "+ palavraCompare);
+											 * System.out.println(" e p = "+ p); }
+											 */
+											pular = getStopWords(palavraCompare);
+											if (pular)
+												continue;
+											if (palavraCompare.equals(gerarStringP4(p))) {
+												// System.out.print ("gerarString(p): "+ gerarString(p));
+												frasesCorrespondentes.add(tesauro.getLinhaToda());
+												// System.out.print(" é igual ");
+												// System.out.println(" a palavraCompare: "+ palavraCompare);
+											}
+										}
+									}
+								}
+							}
+							for (String frase : frasesCorrespondentes) {
+								str.append(frase + " / ");
+							}
+						} else {
+							for (Arquivo tesauro : registro3) {
+
+								boolean pular = false;
+								if (tesauro.getPalavrasLinha().size() < 2) {
+									String palavraCompare = null;
+									palavraCompare = gerarStringP4(tesauro.getPalavrasLinha().toString());
+									pular = getStopWords(palavraCompare);
+									if (pular)
+										continue;
+									if (palavraCompare.equals(gerarStringP4(linha))) {
+										frasesCorrespondentes.add(tesauro.getLinhaToda());
+										// System.out.print ("gerarString(p): "+ gerarString(p));
+										// System.out.print(" é igual ");
+										// System.out.println(" a palavraCompare: "+ palavraCompare);
+									}
+								} else {
+									for (String palavraCompare2 : tesauro.getPalavrasLinha()) {
+										String palavraCompare = null;
+										palavraCompare = gerarStringP4(palavraCompare2);
+										/*
+										 * if (palavraCompare.startsWith("CALCI")){
+										 * System.out.println("palavraCompare = "+ palavraCompare);
+										 * System.out.println(" e p = "+ p); }
+										 */
+										pular = getStopWords(palavraCompare);
+										if (pular)
+											continue;
+										if (palavraCompare.equals(gerarStringP4(linha))) {
+											// System.out.print ("gerarString(p): "+ gerarString(p));
+											frasesCorrespondentes.add(tesauro.getLinhaToda());
+											// System.out.print(" é igual ");
+											// System.out.println(" a palavraCompare: "+ palavraCompare);
+										}
+									}
+								}
+
+							}
+							for (String frase : frasesCorrespondentes) {
+								str.append(frase + " / ");
+							}
+						}
+						/*
+						 * if (str.length() >=32767) { System.out.println(str); break; }
+						 */
+						row = sheetResult.createRow(rownum++);
+						int cellnum = 0;
+						Cell cellLinha = row.createCell(cellnum);
+						if (numLinha % 2 == 0) {
+							estilo = lineStyle1;
+						} else {
+							estilo = lineStyle2;
+						}
+						cellLinha.setCellValue(linha);
+						if (rownum % 30 == 0)
+							System.out.println("coluna 0 gravada:" + linha);
+						cellLinha.setCellStyle(estilo);
+						if (str.length() > 3) {
+							cellnum = 1;
+							Cell cellLinha2 = row.createCell(cellnum);
+							if (numLinha % 2 == 0) {
+								estilo = lineStyle1;
+							} else {
+								estilo = lineStyle2;
+							}
+							if (str.toString().length() >= 32762) {
+								String strTemp = str.toString().substring(0, 32762);
+								cellLinha2.setCellValue(strTemp.substring(0, str.lastIndexOf("/")));
+							} else {
+								cellLinha2.setCellValue(str.toString().substring(0, str.lastIndexOf("/")));
+							}
+
+							if (rownum % 30 == 0)
+								System.out.println(
+										"coluna 1 gravada:" + str.toString().substring(0, str.lastIndexOf("/")));
+							cellLinha2.setCellStyle(estilo);
+						} else {
+							cellnum = 1;
+							Cell cellLinha2 = row.createCell(cellnum);
+							if (numLinha % 2 == 0) {
+								estilo = lineStyle1;
+							} else {
+								estilo = lineStyle2;
+							}
+							cellLinha2.setCellValue("   ");
+							cellLinha2.setCellStyle(estilo);
+						}
+
+						numLinha++;
+
+					} else {
 						row = sheetResult.createRow(rownum++);
 						int cellnum = 0;
 						Cell cellLinha = row.createCell(cellnum);
@@ -1012,97 +1084,42 @@ public class DataSciencer extends HttpServlet {
 						cellLinha.setCellStyle(estilo);
 						numLinha++;
 					}
-
-					try {
-						rand = (int) (10000000 + Math.random() * 90000000);
-						fileName = diretorio + "/" + typeResult + "_comuns_a_todos_" + rand + ".xls";
-						FileOutputStream out = new FileOutputStream(new File(fileName));
-						workbook.write(out);
-						out.close();
-						generatedFiles.add(fileName);
-
-					} catch (FileNotFoundException e) {
-						e.printStackTrace();
-						System.out.println("Arquivo não encontrado!");
-					} catch (IOException e) {
-						e.printStackTrace();
-						System.out.println("Erro na edição do arquivo!");
-					}
-					// Systen.out.println("arquivo: "+typeResult+ " gravado");
-
-				} else if (tipoPlanilha.equals("X")) {
-					XSSFWorkbook workbook = new XSSFWorkbook();
-					XSSFSheet sheetResult = workbook.createSheet("Frases comuns a todos os conjuntos");
-					CellStyle headerStyle = workbook.createCellStyle();
-					headerStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
-					headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-					headerStyle.setAlignment(HorizontalAlignment.CENTER);
-					headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
-
-					CellStyle lineStyle1 = workbook.createCellStyle();
-					lineStyle1.setFillForegroundColor(IndexedColors.GOLD.getIndex());
-					lineStyle1.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-
-					CellStyle lineStyle2 = workbook.createCellStyle();
-					lineStyle1.setFillForegroundColor(IndexedColors.LIGHT_GREEN.getIndex());
-					lineStyle1.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-
-					int rownum = 0;
-					Row row = sheetResult.createRow(rownum++);
-
-					Cell cellTitulo1 = row.createCell(0);
-					cellTitulo1.setCellStyle(headerStyle);
-					cellTitulo1.setCellValue("Coincidem as frases");
-					sheetResult.autoSizeColumn(0);
-
-					int numLinha = 0;
-					CellStyle estilo = null;
-					System.out.println("p1Result tem "+p1Result.size());
-					
-					for (String linha : p1Result) {
-						row = sheetResult.createRow(rownum++);
-						int cellnum = 0;
-						Cell cellLinha = row.createCell(cellnum);
-						if (numLinha % 2 == 0) {
-							estilo = lineStyle1;
-						} else {
-							estilo = lineStyle2;
-						}
-						cellLinha.setCellValue(linha);
-						cellLinha.setCellStyle(estilo);
-						numLinha++;
-					}
-
-					try {
-						rand = (int) (10000000 + Math.random() * 90000000);
-						fileName = diretorio + "/" + typeResult + "_comuns_a_todos_" + rand + ".xlsx";
-						FileOutputStream out = new FileOutputStream(new File(fileName));
-						workbook.write(out);
-						out.close();
-						generatedFiles.add(fileName);
-
-					} catch (FileNotFoundException e) {
-						e.printStackTrace();
-						System.out.println("Arquivo não encontrado!");
-					} catch (IOException e) {
-						e.printStackTrace();
-						System.out.println("Erro na edição do arquivo!");
-					}
-					// Systen.out.println("arquivo: "+typeResult+ " gravado");
 
 				}
+				try {
+					rand = (int) (10000000 + Math.random() * 90000000);
+					fileName = diretorio + "/" + typeResult + "_finalmente" + rand + ".xlsx";
+					FileOutputStream out = new FileOutputStream(new File(fileName));
+					workbook.write(out);
+					out.close();
+					generatedFiles.add(fileName);
+
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+					System.out.println("Arquivo não encontrado!");
+				} catch (IOException e) {
+					e.printStackTrace();
+					System.out.println("Erro na edição do arquivo!");
+				}
+				System.out.println("arquivo: " + typeResult + " gravado");
 
 			}
 
 			if (!generatedFiles.isEmpty()) {
+				// System.out.println("entrou no generatedFiles que tem nº elementos:
+				// "+generatedFiles.size());
 				request.setAttribute("generatedFiles", generatedFiles);
 			}
-			
+
 			if (!coincidem.isEmpty()) {
-				request.setAttribute("coincidentes", coincidem);
+				request.setAttribute("coincidentes", coincidemOrdenados);
 			}
+			if (!termosExclusivos.isEmpty()) {
+				request.setAttribute("termosExclusivos", termosExclusivosOrdenados);
+			}
+
 			if (!p1Result.isEmpty()) {
-				request.setAttribute("coincidentes", p1Result);
+				request.setAttribute("coincidentes", p1ResultOrdenados);
 			}
 			if (!response.isCommitted()) {
 				rd = request.getRequestDispatcher("/appResp/respProj1.jsp");
@@ -1112,18 +1129,102 @@ public class DataSciencer extends HttpServlet {
 
 	}
 
+	private String lerRetirada(String arquivo) {
+		String resposta = "";
+		try {
+			FileInputStream fis = new FileInputStream(new File(arquivo));
+
+			int indice = 0;
+			boolean primeiraLinha = true;
+			// Systen.out.println(arquivo);
+
+			XSSFWorkbook workbookX = null;
+			HSSFWorkbook workbookH = null;
+
+			XSSFSheet sheetX = null;
+			HSSFSheet sheetH = null;
+			try {
+				workbookX = new XSSFWorkbook(fis);
+
+				sheetX = workbookX.getSheetAt(0);
+
+				tipoPlanilha = "X";
+			} catch (Exception e) {
+				System.out.println(e.getMessage());
+			}
+
+			try {
+				workbookH = new HSSFWorkbook(fis);
+
+				sheetH = workbookH.getSheetAt(0);
+
+				tipoPlanilha = "H";
+			} catch (Exception e) {
+				System.out.println(e.getMessage());
+			}
+
+			Iterator<Row> rowIterator = null;
+
+			if (sheetX == null) {
+				rowIterator = sheetH.iterator();
+			} else if (sheetH == null) {
+				rowIterator = sheetX.iterator();
+			}
+
+			String finalTemp1 = "";
+			Arquivo registro = null;
+
+			boolean first = true;
+
+			while (rowIterator.hasNext()) {
+				Row row = rowIterator.next();
+				Iterator<Cell> cellIterator = row.cellIterator();
+				registro = new Arquivo();
+				Set<String> palavras = new HashSet<String>();
+				while (cellIterator.hasNext()) {
+					Cell cell = cellIterator.next();
+					switch (cell.getCellType()) {
+					case STRING:
+						resposta = resposta + cell.getStringCellValue() + " ";
+						break;
+					}
+
+				}
+
+			}
+			fis.close();
+		} catch (IOException e) {
+			System.out.println("Ocorreu exceção: " + e.getMessage());
+		}
+		return Normalizer.normalize(resposta, Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
+				.toUpperCase();
+
+	}
+
 	private boolean getStopWords(String palavraCompare) {
 		boolean resp = false;
 		switch (palavraCompare.toLowerCase()) {
+		case "um":
+		case "uns":
+		case "ao":
+		case "aos":
+		case "a":
+		case "as":
+		case "o":
+		case "os":
 		case "de":
 		case "of":
 		case "the":
 		case "por":
 		case "by":
 		case "do":
+		case "dos":
 		case "da":
+		case "das":
 		case "no":
+		case "nos":
 		case "na":
+		case "nas":
 		case "em":
 		case "in":
 		case "to":
@@ -1132,8 +1233,15 @@ public class DataSciencer extends HttpServlet {
 		case "-":
 		case "(":
 		case ")":
+		case "e":
+		case "and":
+		case "como":
+		case "entre":
+		case "com":
+		case "for":
+
 			resp = true;
-			
+
 		}
 		return resp;
 	}
@@ -1209,6 +1317,10 @@ public class DataSciencer extends HttpServlet {
 					if (finalTemp1.contains(" ")) {
 						String[] cadaP = finalTemp1.split(" ");
 						for (String p : cadaP) {
+
+							if (cidades.contains(p))
+								continue;
+
 							if (p.length() > 1) {
 								palavras.add(Normalizer.normalize(p, Normalizer.Form.NFD)
 										.replaceAll("\\p{InCombiningDiacriticalMarks}+", "").toUpperCase());
@@ -1217,6 +1329,10 @@ public class DataSciencer extends HttpServlet {
 						}
 					} else {
 						if (finalTemp1.length() > 1) {
+
+							if (cidades.contains(finalTemp1))
+								continue;
+
 							palavras.add(Normalizer.normalize(finalTemp1, Normalizer.Form.NFD)
 									.replaceAll("\\p{InCombiningDiacriticalMarks}+", "").toUpperCase());
 						}
@@ -1227,10 +1343,10 @@ public class DataSciencer extends HttpServlet {
 				} else {
 					first = false;
 				}
+				
 				registros.add(registro);
 				cont++;
-				if (cont > maximumLinhas)
-					break;
+				if (cont > maximumLinhas) break;
 			}
 			fis.close();
 		} catch (IOException e) {
@@ -1239,127 +1355,120 @@ public class DataSciencer extends HttpServlet {
 		return registros;
 	}
 
+	
 	private Set<String> lerArqFraseByFrase(String arquivo) {
-		int cont=0;
+		int cont = 0;
 		Set<String> resposta = new HashSet<String>();
-		try  
-		{  
+		try {
 
 			FileInputStream fis = new FileInputStream(new File(arquivo));
-			
-			
+
 			int indice = 0;
 			boolean primeiraLinha = true;
-			//Systen.out.println(arquivo);
-			
+			// Systen.out.println(arquivo);
+
 			XSSFWorkbook workbookX = null;
 			HSSFWorkbook workbookH = null;
-			
+
 			XSSFSheet sheetX = null;
 			HSSFSheet sheetH = null;
 			try {
 				workbookX = new XSSFWorkbook(fis);
-				
-	            sheetX = workbookX.getSheetAt(0);
-			}
-			catch(Exception e) {
-				System.out.println (e.getMessage());
+
+				sheetX = workbookX.getSheetAt(0);
+			} catch (Exception e) {
+				System.out.println(e.getMessage());
 			}
 
 			try {
 				workbookH = new HSSFWorkbook(fis);
-				
-	            sheetH = workbookH.getSheetAt(0);
+
+				sheetH = workbookH.getSheetAt(0);
+			} catch (Exception e) {
+				System.out.println(e.getMessage());
 			}
-			catch(Exception e) {
-				System.out.println (e.getMessage());
-			}
-				
+
 			Iterator<Row> rowIterator = null;
-			
+
 			if (sheetX == null) {
 				rowIterator = sheetH.iterator();
-			}
-			else if (sheetH == null) {
+			} else if (sheetH == null) {
 				rowIterator = sheetX.iterator();
 			}
-			
-	            String frase = "";
-	            
-	            boolean first = true;
-	            
-	            while (rowIterator.hasNext()) {
-	                   Row row = rowIterator.next();
-	                   Iterator<Cell> cellIterator = row.cellIterator();
 
+			String frase = "";
 
-	                   if (!first) {
-	                	   while (cellIterator.hasNext()) {
-	                           Cell cell = cellIterator.next();
-	                           switch (cell.getCellType()) {
-	                           case STRING:
-	    	           					frase = cell.getStringCellValue();
-	                               break;
-	                           }
-	                           
-	                       }
-	                	   
-	                	try {
-	                		if (!(frase.isEmpty() || frase == null)) {
-	                			if (Character.isDigit(frase.charAt(0))) {
-			       	            	//System.out.println("corrigir: "+ frase1);
-			       	            	boolean corrigir = true;
-			       	                while (corrigir) {
-			       	                	System.out.println(frase);
-			       	                	frase = frase.substring(1);
-			       	                	if (frase.charAt(0)=='-') {
-			           	    				frase = frase.substring(1);
-			           	    			}
-			       	                	corrigir = Character.isDigit(frase.charAt(0));
-			       	                	//System.out.println("corrigindo: "+ frase1);
-			       	                }
-			       	                frase = frase.trim();
-			       	                //System.out.println("frase analisada: "+frase);
-			       	            }	
-	                		}
-	                		else {
-	                			continue;
-	                		}
-	                			
-	                	}
-	                	catch(Exception ex) {
-	                		   System.out.println("o erro é na leitura do xlsx "+ ex.getMessage());
-	                	}
-	                	
-	                	
-	                	if (myList.isEmpty()) {
-	                		
-	   						myList.put(Normalizer.normalize(frase, Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "").toUpperCase(), frase);
-	                	}
-	                	else {
-	                		if (!myList.containsKey(Normalizer.normalize(frase, Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "").toUpperCase())) {
-		   						
-		   						myList.put(Normalizer.normalize(frase, Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "").toUpperCase(), frase);
-		   					}	
-	                	}
-	   					
-	   					resposta.add(Normalizer.normalize(frase, Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
-	   			    		    .toUpperCase());	                   
-	   				}
-	                else {
-	                   first = false;
-	                }
-	                cont++;
-	                if (cont > maximumLinhas) break;
-	            }
-				fis.close();  
-			}  
-			catch(IOException e)  
-			{  
-				System.out.println("Ocorreu exceção: "+ e.getMessage());
+			boolean first = true;
+
+			while (rowIterator.hasNext()) {
+				Row row = rowIterator.next();
+				Iterator<Cell> cellIterator = row.cellIterator();
+
+				if (!first) {
+					while (cellIterator.hasNext()) {
+						Cell cell = cellIterator.next();
+						switch (cell.getCellType()) {
+						case STRING:
+							frase = cell.getStringCellValue();
+							break;
+						}
+
+					}
+
+					try {
+						if (!(frase.isEmpty() || frase == null)) {
+							if (Character.isDigit(frase.charAt(0))) {
+								// System.out.println("corrigir: "+ frase1);
+								boolean corrigir = true;
+								while (corrigir) {
+									// System.out.println(frase);
+									frase = frase.substring(1);
+									if (frase.charAt(0) == '-') {
+										frase = frase.substring(1);
+									}
+									corrigir = Character.isDigit(frase.charAt(0));
+									// System.out.println("corrigindo: "+ frase1);
+								}
+								frase = frase.trim();
+								// System.out.println("frase analisada: "+frase);
+							}
+						} else {
+							continue;
+						}
+
+					} catch (Exception ex) {
+						System.out.println("o erro é na leitura do xlsx " + ex.getMessage());
+					}
+
+					if (myList.isEmpty()) {
+
+						myList.put(Normalizer.normalize(frase, Normalizer.Form.NFD)
+								.replaceAll("\\p{InCombiningDiacriticalMarks}+", "").toUpperCase(), frase);
+					} else {
+						if (!myList.containsKey(Normalizer.normalize(frase, Normalizer.Form.NFD)
+								.replaceAll("\\p{InCombiningDiacriticalMarks}+", "").toUpperCase())) {
+
+							myList.put(Normalizer.normalize(frase, Normalizer.Form.NFD)
+									.replaceAll("\\p{InCombiningDiacriticalMarks}+", "").toUpperCase(), frase);
+						}
+					}
+
+					resposta.add(Normalizer.normalize(frase, Normalizer.Form.NFD)
+							.replaceAll("\\p{InCombiningDiacriticalMarks}+", "").toUpperCase());
+				} else {
+					first = false;
+				}
+				cont++;
+				if (cont > maximumLinhas) break;
 			}
+			fis.close();
+		} catch (IOException e) {
+			System.out.println("Ocorreu exceção: " + e.getMessage());
+		}
 		return resposta;
 	}
+
+	
 
 	private static Set<String> joinAll(List<Arquivo> registro1, List<Arquivo> registro2, List<Arquivo> registro3) {
 		Set<String> resposta = new HashSet<String>();
@@ -1374,7 +1483,7 @@ public class DataSciencer extends HttpServlet {
 				frase1 = null;
 				frase1 = Normalizer.normalize(arq1.getLinhaToda(), Normalizer.Form.NFD)
 						.replaceAll("\\p{InCombiningDiacriticalMarks}+", "").toUpperCase();
-				
+
 				if (!(frase1.isEmpty())) {
 					if (Character.isDigit(frase1.charAt(0))) {
 						// System.out.println("corrigir: "+ frase1);
@@ -1420,7 +1529,8 @@ public class DataSciencer extends HttpServlet {
 							// 2"+arq1.getLinhaToda()+"\t"+arq2.getLinhaToda());
 							if (frase2.equals(frase1)) {
 								// Systen.out.println("É IGUAL");
-								if (frase1.startsWith("Ac"))	System.out.print(frase2+ " frase 2 == frase1");
+								if (frase1.startsWith("Ac"))
+									System.out.print(frase2 + " frase 2 == frase1");
 								for (Arquivo arq3 : registro3) {
 									if (encerrar) {
 										break;
@@ -1449,7 +1559,8 @@ public class DataSciencer extends HttpServlet {
 											// Systen.out.println("É IGUAL");
 											resposta.add(arq1.getLinhaToda() + "\t" + arq2.getLinhaToda() + "\t"
 													+ arq3.getLinhaToda());
-											if (frase1.startsWith("Ac"))	System.out.print(frase3+ " frase 3 == frase 2 ");
+											if (frase1.startsWith("Ac"))
+												System.out.print(frase3 + " frase 3 == frase 2 ");
 											// Systen.out.println("adicionado ao P1(joinAll):
 											// "+arq1.getLinhaToda()+"\t"+arq2.getLinhaToda()+"\t"+arq3.getLinhaToda());
 											encerrar = true;
@@ -1503,7 +1614,7 @@ public class DataSciencer extends HttpServlet {
 					}
 
 					if (exclusive.contains(frase1)) {
-						//System.out.println("EXCLUIU : " + frase1);
+						// System.out.println("EXCLUIU : " + frase1);
 						continue;
 					}
 
@@ -1532,12 +1643,12 @@ public class DataSciencer extends HttpServlet {
 							}
 
 							if (exclusive.contains(frase2)) {
-								//System.out.println("EXCLUIU : " + frase2);
+								// System.out.println("EXCLUIU : " + frase2);
 								continue;
 							}
-							
+
 							if (frase2.equals(frase1)) {
-								System.out.println("ADICIONOU : " + frase2);
+								// System.out.println("ADICIONOU : " + frase2);
 								resposta.add(arq1.getLinhaToda() + "\t" + arq2.getLinhaToda());
 								encerrar = true;
 							}
@@ -1614,13 +1725,13 @@ public class DataSciencer extends HttpServlet {
 							case STRING:
 								textCell = tratamentoCelula(cell.getStringCellValue());
 								mapaText.put(indice, textCell);
-								
-								String textCompare = gerarString( Normalizer.normalize(textCell, Normalizer.Form.NFD)
-										.replaceAll("\\p{InCombiningDiacriticalMarks}+", "").toUpperCase().trim()); 
-								mapaTextCompare.put(indice,textCompare);
+								myListTexto.add(textCell);
+
+								String textCompare = gerarString(Normalizer.normalize(textCell, Normalizer.Form.NFD)
+										.replaceAll("\\p{InCombiningDiacriticalMarks}+", "").toUpperCase().trim());
+								mapaTextCompare.put(indice, textCompare);
 								myListTextCompare.add(textCompare);
 
-								
 								break;
 							case NUMERIC:
 								try {
@@ -1634,7 +1745,7 @@ public class DataSciencer extends HttpServlet {
 								textoAux = gerarString(textCell).split(" ");
 								contFreq = textoAux.length;
 								myListFreq.add(numTemp / contFreq);
-								
+
 								break;
 							}
 
@@ -1643,13 +1754,12 @@ public class DataSciencer extends HttpServlet {
 						cont++;
 						if (cont > maximumLinhasProj2)
 							break;
-					}
-					else {
+					} else {
 						first = false;
 					}
 					indice++;
 				}
-					
+
 			} catch (Exception e) {
 				System.out.println(e.getMessage());
 			}
@@ -1663,14 +1773,17 @@ public class DataSciencer extends HttpServlet {
 	private String tratamentoCelula(String celula) {
 		if (!(retiradaCaracteres == null || retiradaCaracteres.equals(""))) {
 			String splitarray[];
-		    
-		    splitarray = retiradaCaracteres.split("\\s+");
-		    
-		    for (String c: splitarray) {
-		    	if (celula.contains(c)) {
-		    		celula = celula.replace(c, "");
-		    	}
-		    }
+
+			splitarray = retiradaCaracteres.split("\\s+");
+
+			for (String c : splitarray) {
+				// System.out.println("caracter a retirar :"+c +"\tcelula: "+celula);
+				if (celula.contains(c)) {
+					// System.out.println(celula);
+					celula = celula.replace(c, "");
+					// System.out.println(celula);
+				}
+			}
 		}
 		return celula;
 	}
@@ -1714,7 +1827,7 @@ public class DataSciencer extends HttpServlet {
 		}
 		return termo;
 	}
-	
+
 	private String gerarStringP4(String termo) {
 		boolean continuar = true;
 		String parte = "";
@@ -1752,8 +1865,8 @@ public class DataSciencer extends HttpServlet {
 				continuar = false;
 			}
 		}
-		return Normalizer.normalize(termo, Normalizer.Form.NFD)
-				.replaceAll("\\p{InCombiningDiacriticalMarks}+", "").toUpperCase();
+		return Normalizer.normalize(termo, Normalizer.Form.NFD).replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
+				.toUpperCase();
 	}
 
 	public void gerarRefinacoes(double porcentagem) {
@@ -1781,11 +1894,11 @@ public class DataSciencer extends HttpServlet {
 			boolean first = true;
 
 			Map<Integer, String> sortedSet = sortByValue(mapaTextCompare);
-			
-			for (Map.Entry<Integer,String> entrada : sortedSet.entrySet()) { 
-				System.out.println(entrada.getKey()); 
-				System.out.println(entrada.getValue());
-				
+
+			for (Map.Entry<Integer, String> entrada : sortedSet.entrySet()) {
+				// System.out.println(entrada.getKey());
+				// System.out.println(entrada.getValue());
+
 				// System.out.println(contInterno+ " de "+myListTextCompare.size());
 				// if (contInterno == 15) break;
 				if (!first) {
@@ -1801,22 +1914,24 @@ public class DataSciencer extends HttpServlet {
 						}
 					}
 					if (!lastCompare.equals(entrada.getValue())) {
-						perc = contEqual / Math.max(tam, lastTam);	
+						perc = contEqual / Math.max(tam, lastTam);
+					} else {
+						perc = 1;
 					}
-					else { 
-						perc=1;
-					}
-					
+
 					/*
-					if (entrada.getValue().equalsIgnoreCase("fungos")) {
-						
-						System.out.println("da vez: "+ entrada.getValue()+"\t last: "+lastCompare+"\t perc= "+perc+"\t cont= "+cont+"\t soma= "+soma
-								+"\tNum da vez= "+mapaNum.get(entrada.getKey())+"\tlastNum="+lastNum);
-						System.out.println("tam=: "+ tam +"\tlastTam="+lastTam+"\tcontEqual="+contEqual);
-						
-					}
-					*/
-					
+					 * if (entrada.getValue().equalsIgnoreCase("fungos")) {
+					 * 
+					 * System.out.println("da vez: "+
+					 * entrada.getValue()+"\t last: "+lastCompare+"\t perc= "+perc+"\t cont= "
+					 * +cont+"\t soma= "+soma
+					 * +"\tNum da vez= "+mapaNum.get(entrada.getKey())+"\tlastNum="+lastNum);
+					 * System.out.println("tam=: "+ tam
+					 * +"\tlastTam="+lastTam+"\tcontEqual="+contEqual);
+					 * 
+					 * }
+					 */
+
 					if (cont > 1) {
 						soma = soma + lastNum;
 						freq = freq + lastFreq;
@@ -1827,13 +1942,12 @@ public class DataSciencer extends HttpServlet {
 
 					if (!(perc >= (porcentagem / 100))) {
 						if (myListNum.isEmpty()) {
-							if (!contemPalavraInvalida(last)) {
+							if (!contemPalavraInvalida(lastCompare)) {
 								resultadosRefinamento.add(new String[] { last });
 							}
 						} else {
-							if (!contemPalavraInvalida(last)) {
-								resultadosRefinamento.add(
-										new String[] { last, soma + "" });
+							if (!contemPalavraInvalida(lastCompare)) {
+								resultadosRefinamento.add(new String[] { last, soma + "" });
 							}
 						}
 
@@ -1849,20 +1963,19 @@ public class DataSciencer extends HttpServlet {
 							cont = 0;
 							soma = 0;
 							perc = 0;
-							freq = 0;	
+							freq = 0;
 						}
-						
+
 					}
-					
 
 					contEqual = 0;
 				}
-				
+
 				last = mapaText.get(entrada.getKey());
 				lastCompare = entrada.getValue();
 				lastTam = entrada.getValue().length();
 				if (!myListNum.isEmpty()) {
-					//lastFreq = myListFreq.get(contInterno);
+					// lastFreq = myListFreq.get(contInterno);
 					lastNum = mapaNum.get(entrada.getKey());
 				}
 
@@ -1878,13 +1991,12 @@ public class DataSciencer extends HttpServlet {
 				freq = freq + lastFreq;
 				if (myListNum.isEmpty()) {
 					if (!contemPalavraInvalida(last)) {
-						resultadosRefinamento.add(new String[] { last });	
+						resultadosRefinamento.add(new String[] { last });
 					}
-					
+
 				} else {
 					if (!contemPalavraInvalida(last)) {
-						resultadosRefinamento.add(
-								new String[] { last, (soma == 0 ? lastNum : soma) + "" });	
+						resultadosRefinamento.add(new String[] { last, (soma == 0 ? lastNum : soma) + "" });
 					}
 				}
 
@@ -1928,11 +2040,10 @@ public class DataSciencer extends HttpServlet {
 						cellTitulo2.setCellValue("Nº DOCUMENTOS INDEXADOS NO R.I.");
 						sheetResult.autoSizeColumn(1);
 						/*
-						Cell cellTitulo3 = row.createCell(cellnum++);
-						cellTitulo3.setCellStyle(headerStyle);
-						cellTitulo3.setCellValue("QUANTIDADE");
-						sheetResult.autoSizeColumn(2);
-						*/
+						 * Cell cellTitulo3 = row.createCell(cellnum++);
+						 * cellTitulo3.setCellStyle(headerStyle);
+						 * cellTitulo3.setCellValue("QUANTIDADE"); sheetResult.autoSizeColumn(2);
+						 */
 					}
 				}
 
@@ -1957,10 +2068,9 @@ public class DataSciencer extends HttpServlet {
 						cell2.setCellValue(linha[1]);
 						cell2.setCellStyle(estilo);
 						/*
-						Cell cell3 = row.createCell(cellnum++);
-						cell3.setCellValue(linha[2]);
-						cell3.setCellStyle(estilo);
-						*/
+						 * Cell cell3 = row.createCell(cellnum++); cell3.setCellValue(linha[2]);
+						 * cell3.setCellStyle(estilo);
+						 */
 					}
 
 					numLinha++;
@@ -2016,11 +2126,10 @@ public class DataSciencer extends HttpServlet {
 						cellTitulo2.setCellValue("Nº DOCUMENTOS INDEXADOS NO R.I.");
 						sheetResult.autoSizeColumn(1);
 						/*
-						Cell cellTitulo3 = row.createCell(cellnum++);
-						cellTitulo3.setCellStyle(headerStyle);
-						cellTitulo3.setCellValue("QUANTIDADE");
-						sheetResult.autoSizeColumn(2);
-						*/
+						 * Cell cellTitulo3 = row.createCell(cellnum++);
+						 * cellTitulo3.setCellStyle(headerStyle);
+						 * cellTitulo3.setCellValue("QUANTIDADE"); sheetResult.autoSizeColumn(2);
+						 */
 					}
 				}
 
@@ -2045,10 +2154,9 @@ public class DataSciencer extends HttpServlet {
 						cell2.setCellValue(linha[1]);
 						cell2.setCellStyle(estilo);
 						/*
-						Cell cell3 = row.createCell(cellnum++);
-						cell3.setCellValue(linha[2]);
-						cell3.setCellStyle(estilo);
-						*/
+						 * Cell cell3 = row.createCell(cellnum++); cell3.setCellValue(linha[2]);
+						 * cell3.setCellStyle(estilo);
+						 */
 					}
 
 					numLinha++;
@@ -2073,10 +2181,10 @@ public class DataSciencer extends HttpServlet {
 
 			for (int z = 0; z < myListTexto.size(); z++) {
 				if (!myListRefinamentoIncluso.contains(myListTextCompare.get(z))) {
-					if(!contemPalavraInvalida(myListTexto.get(z))) {
-						resultadosRefinamentoResto.add(myListTexto.get(z));	
+					if (!contemPalavraInvalida(myListTexto.get(z))) {
+						resultadosRefinamentoResto.add(myListTexto.get(z));
 					}
-					
+
 				}
 			}
 
@@ -2130,7 +2238,7 @@ public class DataSciencer extends HttpServlet {
 
 				try {
 					rand = (int) (10000000 + Math.random() * 90000000);
-					
+
 					fileName = diretorio + "/RefinamentoResto_" + resto + "%_" + rand + ".xls";
 					FileOutputStream out = new FileOutputStream(new File(fileName));
 					workbook.write(out);
@@ -2194,7 +2302,7 @@ public class DataSciencer extends HttpServlet {
 
 				try {
 					rand = (int) (10000000 + Math.random() * 90000000);
-					fileName = diretorio + "/RefinamentoResto_" + resto+ "%_" + rand + ".xlsx";
+					fileName = diretorio + "/RefinamentoResto_" + resto + "%_" + rand + ".xlsx";
 					FileOutputStream out = new FileOutputStream(new File(fileName));
 					workbook.write(out);
 					out.close();
@@ -2214,55 +2322,49 @@ public class DataSciencer extends HttpServlet {
 
 	}
 
-	private boolean contemPalavraInvalida(String palavra) {
+	private boolean contemPalavraInvalida(String frase) {
 		boolean resp = false;
 		if (!(retiradaTermos == null || retiradaTermos.equals(""))) {
 			String splitarray[];
-		    
-		    splitarray = retiradaTermos.split("\\s+");
-		    
-		    for (String c: splitarray) {
-		    	if (palavra.contains(c)) {
-		    		resp = true;
-		    	}
-		    }
+
+			splitarray = retiradaTermos.split("\\s+");
+
+			for (String c : splitarray) {
+				if (frase.contains(c)) {
+					resp = true;
+				}
+			}
 		}
 		return resp;
 	}
-/*
-	private Map<String, Integer> sortByValue(Map<String, Integer> unsortMap, final boolean order)
-    {
-        List<Entry<String, Integer>> list = new LinkedList<>(unsortMap.entrySet());
 
-        // Sorting the list based on values
-        list.sort((o1, o2) -> order ? o1.getValue().compareTo(o2.getValue()) == 0
-                ? o1.getKey().compareTo(o2.getKey())
-                : o1.getValue().compareTo(o2.getValue()) : o2.getValue().compareTo(o1.getValue()) == 0
-                ? o2.getKey().compareTo(o1.getKey())
-                : o2.getValue().compareTo(o1.getValue()));
-        return list.stream().collect(Collectors.toMap(Entry::getKey, Entry::getValue, (a, b) -> b, LinkedHashMap::new));
+	/*
+	 * private Map<String, Integer> sortByValue(Map<String, Integer> unsortMap,
+	 * final boolean order) { List<Entry<String, Integer>> list = new
+	 * LinkedList<>(unsortMap.entrySet());
+	 * 
+	 * // Sorting the list based on values list.sort((o1, o2) -> order ?
+	 * o1.getValue().compareTo(o2.getValue()) == 0 ?
+	 * o1.getKey().compareTo(o2.getKey()) : o1.getValue().compareTo(o2.getValue()) :
+	 * o2.getValue().compareTo(o1.getValue()) == 0 ?
+	 * o2.getKey().compareTo(o1.getKey()) : o2.getValue().compareTo(o1.getValue()));
+	 * return list.stream().collect(Collectors.toMap(Entry::getKey, Entry::getValue,
+	 * (a, b) -> b, LinkedHashMap::new));
+	 * 
+	 * }
+	 */
+	public static HashMap<Integer, String> sortByValue(HashMap<Integer, String> hm) {
+		// Create a list from elements of HashMap
+		List<Map.Entry<Integer, String>> list = new LinkedList<Map.Entry<Integer, String>>(hm.entrySet());
 
-    }
-	*/
-	public static HashMap<Integer, String>  sortByValue(HashMap<Integer, String> hm)
-    {
-        // Create a list from elements of HashMap
-        List<Map.Entry<Integer, String> > list
-            = new LinkedList<Map.Entry<Integer, String> >(
-                hm.entrySet());
- 
-        // Sort the list using lambda expression
-        Collections.sort(
-            list,
-            (i1,
-             i2) -> i1.getValue().compareTo(i2.getValue()));
- 
-        // put data from sorted list to hashmap
-        HashMap<Integer, String> temp
-            = new LinkedHashMap<Integer, String>();
-        for (Map.Entry<Integer, String> aa : list) {
-            temp.put(aa.getKey(), aa.getValue());
-        }
-        return temp;
-    }
+		// Sort the list using lambda expression
+		Collections.sort(list, (i1, i2) -> i1.getValue().compareTo(i2.getValue()));
+
+		// put data from sorted list to hashmap
+		HashMap<Integer, String> temp = new LinkedHashMap<Integer, String>();
+		for (Map.Entry<Integer, String> aa : list) {
+			temp.put(aa.getKey(), aa.getValue());
+		}
+		return temp;
+	}
 }

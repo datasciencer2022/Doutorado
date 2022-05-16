@@ -39,7 +39,7 @@ td {
                                        <td align="center">
 											<form name="frmDataSciencer00a" action="./datasciencer.do" method="GET">
 												<input type="hidden" name = "action" value="callProjeto1">
-												<input type="submit" value="Coleta, Preparação e Análise de Dados">
+												<input type="submit" value="Análise de Dados">
 											</form>
                                        </td> 
                                     </tr>

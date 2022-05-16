@@ -141,11 +141,11 @@
 </form>
 </div>
 <div id="aspect_viewArtifacts_Navigation_list_browse" class="list-group">
-<a class="list-group-item active" href="./datasciencer.do?action=callProjeto1"><span class="h5 list-group-item-heading  h5">Coleta, preparação e análise de dados</span></a>
+<a class="list-group-item active" href="./datasciencer.do?action=callProjeto1"><span class="h5 list-group-item-heading  h5">Análise de dados</span></a>
 <a class="list-group-item inactive" href="#"><span class="h5 list-group-item-heading  h5">&nbsp;&nbsp;&nbsp;</span></a>
-<a class="list-group-item active" href="./datasciencer.do?action=callProjeto2"><span class="h5 list-group-item-heading  h5">Preparação de dados: processamento de linguagem natural</span></a>
+<a class="list-group-item active" href="./datasciencer.do?action=callProjeto2"><span class="h5 list-group-item-heading  h5">Preparação de dados</span></a>
 <a class="list-group-item inactive" href="#"><span class="h5 list-group-item-heading  h5">&nbsp;&nbsp;&nbsp;</span></a>
-<a class="list-group-item active" href="./datasciencer.do?action=disponibilizaAll"><span class="h5 list-group-item-heading  h5">Dados Completos Analisados</span></a>
+<a class="list-group-item active" href="./datasciencer.do?action=disponibilizaAll"><span class="h5 list-group-item-heading  h5">Dados completos analisados</span></a>
 </div>
 <div align="left">
 <img src = "./images/figuraSite.png" width="120%" heigth="120%">

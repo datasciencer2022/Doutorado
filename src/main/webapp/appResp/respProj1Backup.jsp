@@ -25,7 +25,7 @@ function voltar() {
 </head>
 <body>
 <center>
-<h1>Página de resultados - Coleta, Preparação e Análise de Dados</h1>
+<h1>Página de resultados - Análise de Dados</h1>
 <hr>
 &nbsp;
 </br>
