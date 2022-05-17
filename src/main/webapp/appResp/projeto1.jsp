@@ -60,11 +60,11 @@ function voltar() {
 <div class="navbar-header">
 <table>
   <tr>
-  	<td><a class="navbar-brand" href="https://repositorio.unesp.br/"><img src="About%20Reposit%C3%B3rio%20Institucional%20UNESP_files/logo-repositorio.png" alt="Repositório Institucional UNESP"></a>
+  	<td>
+  		<a class="navbar-brand" href="https://repositorio.unesp.br/"><img src="About%20Reposit%C3%B3rio%20Institucional%20UNESP_files/logo-repositorio.png" alt="Repositório Institucional UNESP"></a>
 	</td>
-	
 	<td>
-		<h3><font color = "blue">RILogUser</font></h3>
+	  	<a class="navbar-brand" href="#"><img src="About%20Reposit%C3%B3rio%20Institucional%20UNESP_files/logoRI.png" alt="RILogUser"></a>
 	</td>
   </tr>
 </table>
@@ -147,7 +147,7 @@ function voltar() {
 <div id="aspect_viewArtifacts_Navigation_list_browse" class="list-group">
 <a class="list-group-item active" href="./datasciencer.do?action=callProjeto2"><span class="h5 list-group-item-heading  h5">Preparação de dados</span></a>
 <a class="list-group-item inactive" href="#"><span class="h5 list-group-item-heading  h5">&nbsp;&nbsp;&nbsp;</span></a>
-<a class="list-group-item active" href="./datasciencer.do?action=disponibilizaAll"><span class="h5 list-group-item-heading  h5">Dados Completos Analisados</span></a>
+<a class="list-group-item active" href="./datasciencer.do?action=disponibilizaAll"><span class="h5 list-group-item-heading  h5">Dados completos analisados</span></a>
 <a class="list-group-item inactive" href="#"><span class="h5 list-group-item-heading  h5">&nbsp;&nbsp;&nbsp;</span></a>
 <a class="list-group-item active" href="javascript:voltar()"><span class="h5 list-group-item-heading  h5">Voltar</span></a>
 </div>
@@ -173,7 +173,7 @@ function voltar() {
 <div class="col-xs-12 col-sm-12 col-md-9 main-content">
 <div>
 <center>
-<h4>Análise de Dados</h4>
+<h4>Análise de dados</h4>
 <hr>
 
 <form name="frmDataSciencer01" action="./datasciencer.do" method="POST"
@@ -213,22 +213,34 @@ function voltar() {
                                     
                                         <tr>	                                            
 							   				<td>	                                                   
-                                              Vocábulos criados:
+                                              Vocabulários criados:
                                            </td>
                                            <td>
                                            		<table>
-                                           		   <tr><td>
-                                                   <input type="radio" name="typeResult" value="P1" required checked></td><td> Intersecção de todos (P1)</br>
-                                                   </td></tr>
-                                                   <tr><td>
-                                                   <input type="radio" name="typeResult" value="P2" ></td><td>Termos comuns: logs de busca e termos Tesauro (P2)</br>
-                                                   </td></tr>
-                                                   <tr><td>
-                                                   <input type="radio" name="typeResult" value="P3" ></td><td>Termos comuns: palavras-chave e termos Tesauro (P3)</br>
-                                                   </td></tr>
-                                                   <tr><td>
-                                                   <input type="radio" name="typeResult" value="P4" ></td><td> Termos comuns: logs de busca e palavras-chave (P4)</br>
-                                                   </td></tr>
+                                           		   <tr>
+	                                           		   <td>
+	                                                   <input type="radio" name="typeResult" value="P1" required checked></td><td> Intersecção de todos (P1)</br>
+	                                                   </td></tr>
+	                                                   <tr><td>
+	                                                   <input type="radio" name="typeResult" value="P2" ></td><td>Termos comuns: logs de busca e termos Tesauro (P2)</br>
+	                                                   </td></tr>
+	                                                   <tr><td>
+	                                                   <input type="radio" name="typeResult" value="P3" ></td><td>Termos comuns: palavras-chave e termos Tesauro (P3)</br>
+	                                                   </td></tr>
+	                                                   <tr><td>
+	                                                   <input type="radio" name="typeResult" value="P4" ></td><td> Palavras comuns: logs de busca e palavras-chave (P4)</br>
+	                                                   </td>
+	                                                   <!-- nova versão -->
+	                                                   <tr><td>
+	                                                   <input type="radio" name="typeResult" value="exclusiveLogs" ></td><td>Palavras exclusivas dos logs de busca</br>
+	                                                   </td></tr>
+	                                                   <tr><td>
+	                                                   <input type="radio" name="typeResult" value="exclusivePalavrasChave" ></td><td>Palavras exclusivas das palavras-chave</br>
+	                                                   </td></tr>
+	                                                   <tr><td>
+	                                                   <input type="radio" name="typeResult" value="exclusiveTesauro" ></td><td>Termos exclusivos do Tesauro</br>
+	                                                   </td>
+                                                   </tr>
                                                   </table>
                                            </td>
                                   </tr>
@@ -238,7 +250,7 @@ function voltar() {
                                            </td>
                                     </tr>
                                 </table>
-                         <input type="submit"  class="btn btn-primary" value="Preparação e Análise de Dados">
+                         <input type="submit"  class="btn btn-primary" value="Análise de dados">
                		 </center>
                	</form>
 </div>

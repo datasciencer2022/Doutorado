@@ -57,11 +57,11 @@
 <div class="navbar-header">
 <table>
   <tr>
-  	<td><a class="navbar-brand" href="https://repositorio.unesp.br/"><img src="About%20Reposit%C3%B3rio%20Institucional%20UNESP_files/logo-repositorio.png" alt="Repositório Institucional UNESP"></a>
+  	<td>
+  		<a class="navbar-brand" href="https://repositorio.unesp.br/"><img src="About%20Reposit%C3%B3rio%20Institucional%20UNESP_files/logo-repositorio.png" alt="Repositório Institucional UNESP"></a>
 	</td>
-	
 	<td>
-		<h3><font color = "blue">RILogUser</font></h3>
+	  	<a class="navbar-brand" href="#"><img src="About%20Reposit%C3%B3rio%20Institucional%20UNESP_files/logoRI.png" alt="RILogUser"></a>
 	</td>
   </tr>
 </table>
@@ -148,7 +148,13 @@
 <a class="list-group-item active" href="./datasciencer.do?action=disponibilizaAll"><span class="h5 list-group-item-heading  h5">Dados completos analisados</span></a>
 </div>
 <div align="left">
-<img src = "./images/figuraSite.png" width="120%" heigth="120%">
+<img src = "./images/figuraSite.png" width="120%" heigth="120%"></br>
+<center>
+<a href="https://www.youtube.com/watch?v=opo65F4iRBw">
+Tutorial:</br>
+<img src = "./images/logoYouTube.png" width="120%" heigth="120%">
+</a>
+</center>
 </div>
 
 <div>

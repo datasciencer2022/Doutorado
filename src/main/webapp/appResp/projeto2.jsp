@@ -60,11 +60,11 @@ function voltar() {
 <div class="navbar-header">
 <table>
   <tr>
-  	<td><a class="navbar-brand" href="https://repositorio.unesp.br/"><img src="About%20Reposit%C3%B3rio%20Institucional%20UNESP_files/logo-repositorio.png" alt="Repositório Institucional UNESP"></a>
+  	<td>
+  		<a class="navbar-brand" href="https://repositorio.unesp.br/"><img src="About%20Reposit%C3%B3rio%20Institucional%20UNESP_files/logo-repositorio.png" alt="Repositório Institucional UNESP"></a>
 	</td>
-	
 	<td>
-		<h3><font color = "blue">RILogUser</font></h3>
+	  	<a class="navbar-brand" href="#"><img src="About%20Reposit%C3%B3rio%20Institucional%20UNESP_files/logoRI.png" alt="RILogUser"></a>
 	</td>
   </tr>
 </table>
@@ -150,8 +150,8 @@ function voltar() {
 <a class="list-group-item active" href="javascript:voltar()"><span class="h5 list-group-item-heading  h5">Voltar</span></a>
 </div>
 <div align="justify">
-<p><strong>Logs de Busca de Usuários e Processamento de Linguagem Natural</strong></p>
-<p>Para a análise dos logs de busca dos usuários dentro de um sistema de recuperação de informações como o RI Unesp, o desenvolvimento de algoritmos capazes de realizar o processamento da linguagem natural dos usuários é de suma importância, haja vista o volume e variedade de registros coletados sem qualquer tratamento ou padronização.</p>
+<p><strong>Logs de Busca de Usuários e Recursos Computacionais</strong></p>
+<p>Para a análise dos logs de busca dos usuários dentro de um sistema de recuperação de informações como o RI Unesp, o desenvolvimento de algoritmos capazes de realizar rotinas automatizadas para depuração / limpeza de logs de pesquisa é de suma importância, haja vista o volume e variedade de registros coletados sem qualquer tratamento ou padronização.</p>
 </div>
 
 <div>
@@ -165,7 +165,7 @@ function voltar() {
 <div class="col-xs-12 col-sm-12 col-md-9 main-content">
 <div>
 <center>
-<h4>Preparação de Dados: Processamento de Linguagem Natural</h4>
+<h4>Preparação de Dados</h4>
 <hr>
 	<form name="frmDataSciencer01" action="./datasciencer.do" method="POST"
             	enctype="multipart/form-data">
@@ -180,7 +180,25 @@ function voltar() {
                                               Porcentagem de similaridade:
                                            </td>
                                            <td>
-                                                   <input type="number" name="porcentagem" value="90" min="1" max="99">
+                                                   <input type="number" name="porcentagem" value="90" min="1" max="100">
+                                           </td>
+                                    </tr>
+                                    <tr>	                                            
+							   			  <td>	                                                   
+                                              Retirada dos caracteres inválidos em cada termo:</br>
+                                              <input type="file" name="arqCaracteresInvalid">
+                                           </td>
+                                           <td>
+                                                   <textarea name="retiradaCaracteres" rows="4" cols="25"></textarea>
+                                           </td>
+                                    </tr>
+                                    <tr>	                                            
+							   			  <td>	                                                   
+                                              Retirada dos termos que contenham palavras inválidas:</br>
+                                              <input type="file" name="arqPalavrasInvalid">
+                                           </td>
+                                           <td>
+                                                   <textarea name="retiradaTermos" rows="4" cols="25"></textarea>
                                            </td>
                                     </tr>
                                     <tr>	                                            

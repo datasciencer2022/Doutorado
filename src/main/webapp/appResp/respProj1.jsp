@@ -9,9 +9,14 @@ if (request.getAttribute("generatedFiles") != null){
 	generatedFiles = (List<String>) request.getAttribute("generatedFiles");
 }
 
-Set<String> coincidentes = new HashSet<String>();
+List<String> coincidentes = new ArrayList<String>();
 if (request.getAttribute("coincidentes") != null){
-	coincidentes = (Set<String>) request.getAttribute("coincidentes");
+	coincidentes = (List<String>) request.getAttribute("coincidentes");
+}
+
+List<String> termosExclusivos = new ArrayList<String>();
+if (request.getAttribute("termosExclusivos") != null){
+	termosExclusivos = (List<String>) request.getAttribute("termosExclusivos");
 }
 %>
 <!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="pt-br"> <![endif]-->
@@ -76,11 +81,11 @@ function voltar() {
 <div class="navbar-header">
 <table>
   <tr>
-  	<td><a class="navbar-brand" href="https://repositorio.unesp.br/"><img src="About%20Reposit%C3%B3rio%20Institucional%20UNESP_files/logo-repositorio.png" alt="Repositório Institucional UNESP"></a>
+  	<td>
+  		<a class="navbar-brand" href="https://repositorio.unesp.br/"><img src="About%20Reposit%C3%B3rio%20Institucional%20UNESP_files/logo-repositorio.png" alt="Repositório Institucional UNESP"></a>
 	</td>
-	
 	<td>
-		<h3><font color = "blue">RILogUser</font></h3>
+	  	<a class="navbar-brand" href="#"><img src="About%20Reposit%C3%B3rio%20Institucional%20UNESP_files/logoRI.png" alt="RILogUser"></a>
 	</td>
   </tr>
 </table>
@@ -224,10 +229,31 @@ function voltar() {
 				<td style="color:#00F;"><%=termo.toUpperCase() %></td>
 			</tr>
 		<%
-		}
+		}%>
+		</table>
+	<%
+	}
+	if (!termosExclusivos.isEmpty()){
+	%>
+		<table name="tabela">
+		<tr>
+			<td style="font-weight:bold"><h5>TERMOS EXCLUSIVOS</h5></td>
+		</tr>
+		<tr>
+			<td>&nbsp;</td>
+		</tr>
+		<%
+		for(String termo: termosExclusivos){
+		%>
+			<tr>
+				<td style="color:#00F;"><%=termo.toUpperCase() %></td>
+			</tr>
+		<%
+		}%>
+		</table>
+	<%
 	}
 	%>
-		</table>
 </center>
 </div>
 <div class="visible-xs visible-sm">

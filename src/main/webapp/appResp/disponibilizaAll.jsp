@@ -60,15 +60,14 @@ function voltar() {
 <div class="navbar-header">
 <table>
   <tr>
-  	<td><a class="navbar-brand" href="https://repositorio.unesp.br/"><img src="About%20Reposit%C3%B3rio%20Institucional%20UNESP_files/logo-repositorio.png" alt="Repositório Institucional UNESP"></a>
+  	<td>
+  		<a class="navbar-brand" href="https://repositorio.unesp.br/"><img src="About%20Reposit%C3%B3rio%20Institucional%20UNESP_files/logo-repositorio.png" alt="Repositório Institucional UNESP"></a>
 	</td>
-	
 	<td>
-		<h3><font color = "blue">RILogUser</font></h3>
+	  	<a class="navbar-brand" href="#"><img src="About%20Reposit%C3%B3rio%20Institucional%20UNESP_files/logoRI.png" alt="RILogUser"></a>
 	</td>
   </tr>
 </table>
-
 <div class="navbar-header pull-right visible-xs hidden-sm hidden-md hidden-lg">
 <ul class="nav nav-pills pull-left ">
 <li class="dropdown" id="ds-language-selection-xs">
@@ -145,9 +144,9 @@ function voltar() {
 </form>
 </div>
 <div id="aspect_viewArtifacts_Navigation_list_browse" class="list-group">
-<a class="list-group-item active" href="./datasciencer.do?action=callProjeto1"><span class="h5 list-group-item-heading  h5">Coleta, preparação e análise de dados</span></a>
+<a class="list-group-item active" href="./datasciencer.do?action=callProjeto1"><span class="h5 list-group-item-heading  h5">Análise de dados</span></a>
 <a class="list-group-item inactive" href="#"><span class="h5 list-group-item-heading  h5">&nbsp;&nbsp;&nbsp;</span></a>
-<a class="list-group-item active" href="./datasciencer.do?action=callProjeto2"><span class="h5 list-group-item-heading  h5">Preparação de dados: processamento de linguagem natural</span></a>
+<a class="list-group-item active" href="./datasciencer.do?action=callProjeto2"><span class="h5 list-group-item-heading  h5">Preparação de dados</span></a>
 <a class="list-group-item inactive" href="#"><span class="h5 list-group-item-heading  h5">&nbsp;&nbsp;&nbsp;</span></a>
 <a class="list-group-item active" href="javascript:voltar()"><span class="h5 list-group-item-heading  h5">Voltar</span></a>
 </div>
@@ -173,11 +172,6 @@ function voltar() {
 <center>
 <h4>Download de Resultados Completos</h4>
 <hr>
-</br>
-</br>
-		
-		</br>
-		
 		<table>
 			<tr>
 				<td>
@@ -230,7 +224,51 @@ function voltar() {
 					<input type="submit"  class="btn btn-primary" value="DOWNLOAD">
 				</form>
 				</td>
-				<td align="left">&nbsp;&nbsp;&nbsp;Termos comuns: logs de busca e palavras-chave (P4)</td>
+				<td align="left">&nbsp;&nbsp;&nbsp;Palavras comuns: logs de busca e palavras-chave (P4)</td>
+			</tr>
+			<tr>
+				<td>&nbsp;</td>
+			</tr>
+			<!--  agora os exclusivos -->
+			
+			<tr>
+				<td>
+				<form action="./datasciencer.do" method="POST"
+					enctype="multipart/form-data">
+					<input type="hidden" name = "action" value="download">
+					<input type="hidden" name = "fileName" value="/home/riloguser/riloguser.uh-app.com.br/temp/exclusiveLogs.xlsx">
+					<input type="submit"  class="btn btn-primary" value="DOWNLOAD">
+				</form>
+				</td>
+				<td align="left">&nbsp;&nbsp;&nbsp;Palavras exclusivas: logs de busca</td>
+			</tr>
+			<tr>
+				<td>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>
+				<form action="./datasciencer.do" method="POST"
+					enctype="multipart/form-data">
+					<input type="hidden" name = "action" value="download">
+					<input type="hidden" name = "fileName" value="/home/riloguser/riloguser.uh-app.com.br/temp/exclusivePalavrasChave.xlsx">
+					<input type="submit"  class="btn btn-primary" value="DOWNLOAD">
+				</form>
+				</td>
+				<td align="left">&nbsp;&nbsp;&nbsp;Palavras exclusivas: palavras-chave</td>
+			</tr>
+			<tr>
+				<td>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>
+				<form action="./datasciencer.do" method="POST"
+					enctype="multipart/form-data">
+					<input type="hidden" name = "action" value="download">
+					<input type="hidden" name = "fileName" value="/home/riloguser/riloguser.uh-app.com.br/temp/exclusiveTesauro.xlsx">
+					<input type="submit"  class="btn btn-primary" value="DOWNLOAD">
+				</form>
+				</td>
+				<td align="left">&nbsp;&nbsp;&nbsp;Termos exclusivos: Tesauro</td>
 			</tr>
 		</table>
 </center>
