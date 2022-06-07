@@ -160,20 +160,18 @@ function voltar() {
 </div>
 </div>
 <div align="justify">
-<p>Os produtos das comparações entre as listas viabilizam a identificação de conjuntos compostos por elementos comuns, nomeados no diagrama: P1, P2, P3 e P4.
+<p>Os produtos das comparações entre as listas viabilizam a identificação de conjuntos compostos por elementos comuns, nomeados no diagrama: V4, V5, V6 e V7.
 </p>
-<img src = "./images/figuraSite.png" width="120%" heigth="120%">
-<p>Onde P1 corresponde à compatibilização dos três conjuntos; P2 corresponde aos termos comuns apenas ao Tesauro e ao vocabulário dos usuários; P3 aos termos comuns apenas ao Tesauro e às palavras-chave dos autores e P4 aos termos comuns apenas às palavras-chave dos autores e aos termos de busca dos usuários.</p>
+<img src = "./images/figuraSite.png" width="100%" heigth="100%">
+<p>Onde V7 corresponde à compatibilização dos três conjuntos; V5 corresponde aos termos comuns apenas ao Tesauro e ao vocabulário dos usuários; V6 aos termos comuns apenas ao Tesauro e às palavras-chave dos autores e V4 aos termos comuns apenas às palavras-chave dos autores e aos termos de busca dos usuários.</p>
 </div>
 
-
 </div>
-
-
+ 
 <div class="col-xs-12 col-sm-12 col-md-9 main-content">
 <div>
 <center>
-<h4>Análise de dados</h4>
+<h4>Preparação de dados</h4>
 <hr>
 
 <form name="frmDataSciencer01" action="./datasciencer.do" method="POST"
@@ -217,30 +215,36 @@ function voltar() {
                                            </td>
                                            <td>
                                            		<table>
-                                           		   <tr>
+                                           		    <tr>
 	                                           		   <td>
-	                                                   <input type="radio" name="typeResult" value="P1" required checked></td><td> Intersecção de todos (P1)</br>
-	                                                   </td></tr>
-	                                                   <tr><td>
-	                                                   <input type="radio" name="typeResult" value="P2" ></td><td>Termos comuns: logs de busca e termos Tesauro (P2)</br>
-	                                                   </td></tr>
-	                                                   <tr><td>
-	                                                   <input type="radio" name="typeResult" value="P3" ></td><td>Termos comuns: palavras-chave e termos Tesauro (P3)</br>
-	                                                   </td></tr>
-	                                                   <tr><td>
-	                                                   <input type="radio" name="typeResult" value="P4" ></td><td> Palavras comuns: logs de busca e palavras-chave (P4)</br>
+	                                           		   		<input type="radio" name="typeResult" value="exclusiveLogs" ></td><td>Palavras exclusivas dos logs de busca (V1)</br>
 	                                                   </td>
-	                                                   <!-- nova versão -->
-	                                                   <tr><td>
-	                                                   <input type="radio" name="typeResult" value="exclusiveLogs" ></td><td>Palavras exclusivas dos logs de busca</br>
-	                                                   </td></tr>
-	                                                   <tr><td>
-	                                                   <input type="radio" name="typeResult" value="exclusivePalavrasChave" ></td><td>Palavras exclusivas das palavras-chave</br>
-	                                                   </td></tr>
-	                                                   <tr><td>
-	                                                   <input type="radio" name="typeResult" value="exclusiveTesauro" ></td><td>Termos exclusivos do Tesauro</br>
+	                                                </tr>
+	                                                <tr>
+	                                                	<td>
+	                                                   		<input type="radio" name="typeResult" value="exclusiveTesauro" ></td><td>Termos exclusivos do Tesauro (V2)</br>	                                                   
+	                                           		   </td>
+	                                           		</tr>
+	                                           		<tr>
+	                                           			<td>
+	                                           		   		<input type="radio" name="typeResult" value="exclusivePalavrasChave" ></td><td>Palavras exclusivas das palavras-chave (V3)</br>
 	                                                   </td>
-                                                   </tr>
+	                                                </tr>
+	                                                <tr>
+	                                           			<td>
+	                                           		   <input type="radio" name="typeResult" value="P4" ></td><td> Palavras comuns: logs de busca e palavras-chave (V4)</br>
+	                                           		   </td></tr>
+	                                           		   <tr>
+	                                           			<td>
+	                                           		   <input type="radio" name="typeResult" value="P2" ></td><td>Termos comuns: logs de busca e termos Tesauro (V5)</br>
+	                                                   </td></tr>
+	                                                   <tr><td>
+	                                                   <input type="radio" name="typeResult" value="P3" ></td><td>Termos comuns: palavras-chave e termos Tesauro (V6)</br>
+	                                                   </td></tr>
+	                                                   <tr><td>
+	                                                   <input type="radio" name="typeResult" value="P1" required checked></td><td> Intersecção de todos (V7)</br>
+	                                                   </td>
+	                                              </tr>
                                                   </table>
                                            </td>
                                   </tr>

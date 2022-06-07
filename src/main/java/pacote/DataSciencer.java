@@ -51,6 +51,7 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 public class DataSciencer extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
+	private String typeResult = "";
 	private int maximumLinhas = 300;
 	private int maximumLinhasProj2 = 5000;
 
@@ -183,6 +184,7 @@ public class DataSciencer extends HttpServlet {
 		br.close();
 		fr.close();
 
+		typeResult = "";
 		logs = null;
 		palavrasChave = null;
 		tesauro = null;
@@ -224,7 +226,7 @@ public class DataSciencer extends HttpServlet {
 		}
 
 		String action = "";
-		String typeResult = "";
+		
 		int porcentagem = 90;
 
 		DiskFileItemFactory factory = new DiskFileItemFactory();
@@ -250,7 +252,25 @@ public class DataSciencer extends HttpServlet {
 					}
 
 					if (nomeDoCampo.equals("typeResult")) {
-						typeResult = valorDoCampo;
+						switch (valorDoCampo) {
+						case "P1":
+							typeResult = "V7";
+							break;
+						case "P2":
+							typeResult = "V5";
+							break;
+						case "P3":
+							typeResult = "V6";
+							break;
+						case "P4":
+							typeResult = "V4";
+							break;
+						default:
+							typeResult = valorDoCampo;
+							break;
+						}
+							
+						
 					}
 
 					if (nomeDoCampo.equals("fileName")) {
@@ -402,7 +422,7 @@ public class DataSciencer extends HttpServlet {
 
 		else if (action.equals("parteUpload")) {
 			String titulo1 = "", titulo2 = "", titulo3 = "";
-			if (typeResult.equals("P1") || typeResult.equals("P4")) {
+			if (typeResult.equals("V7") || typeResult.equals("V4")) {
 				registro1 = lerArq(logs);
 				titulo1 = logs.substring(45);
 				registro2 = lerArq(palavrasChave);
@@ -413,7 +433,7 @@ public class DataSciencer extends HttpServlet {
 				inclusive1 = lerArqFraseByFrase(logs);
 				inclusive2 = lerArqFraseByFrase(palavrasChave);
 				exclusive = lerArqFraseByFrase(tesauro);
-			} else if (typeResult.equals("P2")) {
+			} else if (typeResult.equals("V5")) {
 
 				registro1 = lerArq(logs);
 				titulo1 = logs.substring(45);
@@ -425,7 +445,7 @@ public class DataSciencer extends HttpServlet {
 				inclusive1 = lerArqFraseByFrase(logs);
 				inclusive2 = lerArqFraseByFrase(tesauro);
 				exclusive = lerArqFraseByFrase(palavrasChave);
-			} else if (typeResult.equals("P3")) {
+			} else if (typeResult.equals("V6")) {
 				registro1 = lerArq(tesauro);
 				titulo1 = tesauro.substring(45);
 				registro2 = lerArq(palavrasChave);
@@ -475,7 +495,7 @@ public class DataSciencer extends HttpServlet {
 					}
 				}
 				// System.out.println("número de itens: "+termosExclusivos.size());
-			} else if (!typeResult.equals("P1")) {
+			} else if (!typeResult.equals("V7")) {
 				// construção dos coincidem
 				for (String cada : inclusive1) {
 
@@ -534,7 +554,7 @@ public class DataSciencer extends HttpServlet {
 				lineStyle1.setFillForegroundColor(IndexedColors.LIGHT_GREEN.getIndex());
 				lineStyle1.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
-				if (typeResult.equals("P1")) {
+				if (typeResult.equals("V7")) {
 					Cell cellTitulo1 = row.createCell(cellnum++);
 					cellTitulo1.setCellStyle(headerStyle);
 					cellTitulo1.setCellValue(titulo1);
@@ -665,7 +685,7 @@ public class DataSciencer extends HttpServlet {
 				cellTitulo1.setCellValue("Coincidem as frases");
 				sheetResult.autoSizeColumn(0);
 
-				if (typeResult.equals("P4")) {
+				if (typeResult.equals("V4")) {
 					Cell cellTitulo2 = row.createCell(1);
 					cellTitulo2.setCellStyle(headerStyle);
 					cellTitulo2.setCellValue("Termos Relacionados ao Tesauro");
@@ -679,7 +699,7 @@ public class DataSciencer extends HttpServlet {
 				coincidemOrdenados = coincidem.stream().sorted().collect(Collectors.toList());
 
 				for (String linha : coincidemOrdenados) {
-					if (typeResult.equals("P4")) {
+					if (typeResult.equals("V4")) {
 						StringBuilder str = new StringBuilder();
 						Set<String> frasesCorrespondentes = new HashSet<String>();
 						if (linha.contains(" ")) {
@@ -691,11 +711,11 @@ public class DataSciencer extends HttpServlet {
 									boolean pular = false;
 									if (tesauro.getPalavrasLinha().size() < 2) {
 										String palavraCompare = null;
-										palavraCompare = gerarStringP4(tesauro.getPalavrasLinha().toString());
+										palavraCompare = gerarStringV4(tesauro.getPalavrasLinha().toString());
 										pular = getStopWords(palavraCompare);
 										if (pular)
 											continue;
-										if (palavraCompare.equals(gerarStringP4(p))) {
+										if (palavraCompare.equals(gerarStringV4(p))) {
 											frasesCorrespondentes.add(tesauro.getLinhaToda());
 											// System.out.print ("gerarString(p): "+ gerarString(p));
 											// System.out.print(" é igual ");
@@ -704,7 +724,7 @@ public class DataSciencer extends HttpServlet {
 									} else {
 										for (String palavraCompare2 : tesauro.getPalavrasLinha()) {
 											String palavraCompare = null;
-											palavraCompare = gerarStringP4(palavraCompare2);
+											palavraCompare = gerarStringV4(palavraCompare2);
 											/*
 											 * if (palavraCompare.startsWith("CALCI")){
 											 * System.out.println("palavraCompare = "+ palavraCompare);
@@ -713,7 +733,7 @@ public class DataSciencer extends HttpServlet {
 											pular = getStopWords(palavraCompare);
 											if (pular)
 												continue;
-											if (palavraCompare.equals(gerarStringP4(p))) {
+											if (palavraCompare.equals(gerarStringV4(p))) {
 												// System.out.print ("gerarString(p): "+ gerarString(p));
 												frasesCorrespondentes.add(tesauro.getLinhaToda());
 												// System.out.print(" é igual ");
@@ -732,11 +752,11 @@ public class DataSciencer extends HttpServlet {
 								boolean pular = false;
 								if (tesauro.getPalavrasLinha().size() < 2) {
 									String palavraCompare = null;
-									palavraCompare = gerarStringP4(tesauro.getPalavrasLinha().toString());
+									palavraCompare = gerarStringV4(tesauro.getPalavrasLinha().toString());
 									pular = getStopWords(palavraCompare);
 									if (pular)
 										continue;
-									if (palavraCompare.equals(gerarStringP4(linha))) {
+									if (palavraCompare.equals(gerarStringV4(linha))) {
 										frasesCorrespondentes.add(tesauro.getLinhaToda());
 										// System.out.println("achou correspondente de palavra única: "+ linha+ "\t as
 										// frases: "+tesauro.getLinhaToda());
@@ -744,11 +764,11 @@ public class DataSciencer extends HttpServlet {
 								} else {
 									for (String palavraCompare2 : tesauro.getPalavrasLinha()) {
 										String palavraCompare = null;
-										palavraCompare = gerarStringP4(palavraCompare2);
+										palavraCompare = gerarStringV4(palavraCompare2);
 										pular = getStopWords(palavraCompare);
 										if (pular)
 											continue;
-										if (palavraCompare.equals(gerarStringP4(linha))) {
+										if (palavraCompare.equals(gerarStringV4(linha))) {
 											frasesCorrespondentes.add(tesauro.getLinhaToda());
 											// System.out.println("achou correspondente de palavra única: "+ linha+ "\t
 											// as frases: "+tesauro.getLinhaToda());
@@ -821,7 +841,7 @@ public class DataSciencer extends HttpServlet {
 			}
 
 			List<String> p1ResultOrdenados = new ArrayList<String>();
-			if (!p1Result.isEmpty() && typeResult.equals("P1")) {
+			if (!p1Result.isEmpty() && typeResult.equals("V7")) {
 				// System.out.println("entrou no p1Result que tem nº elementos:
 				// "+p1Result.size());
 				XSSFWorkbook workbook = new XSSFWorkbook();
@@ -890,7 +910,7 @@ public class DataSciencer extends HttpServlet {
 
 			List<String> termosExclusivosOrdenados = new ArrayList<String>();
 
-			if (!termosExclusivos.isEmpty() && !typeResult.startsWith("P")) {
+			if (!termosExclusivos.isEmpty() && !typeResult.startsWith("V")) {
 				// System.out.println("entrou no termosExclusivos que tem nº elementos:
 				// "+termosExclusivos.size());
 				XSSFWorkbook workbook = new XSSFWorkbook();
@@ -946,11 +966,11 @@ public class DataSciencer extends HttpServlet {
 									boolean pular = false;
 									if (tesauro.getPalavrasLinha().size() < 2) {
 										String palavraCompare = null;
-										palavraCompare = gerarStringP4(tesauro.getPalavrasLinha().toString());
+										palavraCompare = gerarStringV4(tesauro.getPalavrasLinha().toString());
 										pular = getStopWords(palavraCompare);
 										if (pular)
 											continue;
-										if (palavraCompare.equals(gerarStringP4(p))) {
+										if (palavraCompare.equals(gerarStringV4(p))) {
 											frasesCorrespondentes.add(tesauro.getLinhaToda());
 											// System.out.print ("gerarString(p): "+ gerarString(p));
 											// System.out.print(" é igual ");
@@ -959,7 +979,7 @@ public class DataSciencer extends HttpServlet {
 									} else {
 										for (String palavraCompare2 : tesauro.getPalavrasLinha()) {
 											String palavraCompare = null;
-											palavraCompare = gerarStringP4(palavraCompare2);
+											palavraCompare = gerarStringV4(palavraCompare2);
 											/*
 											 * if (palavraCompare.startsWith("CALCI")){
 											 * System.out.println("palavraCompare = "+ palavraCompare);
@@ -968,7 +988,7 @@ public class DataSciencer extends HttpServlet {
 											pular = getStopWords(palavraCompare);
 											if (pular)
 												continue;
-											if (palavraCompare.equals(gerarStringP4(p))) {
+											if (palavraCompare.equals(gerarStringV4(p))) {
 												// System.out.print ("gerarString(p): "+ gerarString(p));
 												frasesCorrespondentes.add(tesauro.getLinhaToda());
 												// System.out.print(" é igual ");
@@ -987,11 +1007,11 @@ public class DataSciencer extends HttpServlet {
 								boolean pular = false;
 								if (tesauro.getPalavrasLinha().size() < 2) {
 									String palavraCompare = null;
-									palavraCompare = gerarStringP4(tesauro.getPalavrasLinha().toString());
+									palavraCompare = gerarStringV4(tesauro.getPalavrasLinha().toString());
 									pular = getStopWords(palavraCompare);
 									if (pular)
 										continue;
-									if (palavraCompare.equals(gerarStringP4(linha))) {
+									if (palavraCompare.equals(gerarStringV4(linha))) {
 										frasesCorrespondentes.add(tesauro.getLinhaToda());
 										// System.out.print ("gerarString(p): "+ gerarString(p));
 										// System.out.print(" é igual ");
@@ -1000,7 +1020,7 @@ public class DataSciencer extends HttpServlet {
 								} else {
 									for (String palavraCompare2 : tesauro.getPalavrasLinha()) {
 										String palavraCompare = null;
-										palavraCompare = gerarStringP4(palavraCompare2);
+										palavraCompare = gerarStringV4(palavraCompare2);
 										/*
 										 * if (palavraCompare.startsWith("CALCI")){
 										 * System.out.println("palavraCompare = "+ palavraCompare);
@@ -1009,7 +1029,7 @@ public class DataSciencer extends HttpServlet {
 										pular = getStopWords(palavraCompare);
 										if (pular)
 											continue;
-										if (palavraCompare.equals(gerarStringP4(linha))) {
+										if (palavraCompare.equals(gerarStringV4(linha))) {
 											// System.out.print ("gerarString(p): "+ gerarString(p));
 											frasesCorrespondentes.add(tesauro.getLinhaToda());
 											// System.out.print(" é igual ");
@@ -1088,7 +1108,7 @@ public class DataSciencer extends HttpServlet {
 				}
 				try {
 					rand = (int) (10000000 + Math.random() * 90000000);
-					fileName = diretorio + "/" + typeResult + "_finalmente" + rand + ".xlsx";
+					fileName = diretorio + "/" + typeResult + "_" + rand + ".xlsx";
 					FileOutputStream out = new FileOutputStream(new File(fileName));
 					workbook.write(out);
 					out.close();
@@ -1121,6 +1141,8 @@ public class DataSciencer extends HttpServlet {
 			if (!p1Result.isEmpty()) {
 				request.setAttribute("coincidentes", p1ResultOrdenados);
 			}
+			
+			request.setAttribute("typeResult", typeResult);
 			if (!response.isCommitted()) {
 				rd = request.getRequestDispatcher("/appResp/respProj1.jsp");
 				rd.forward(request, response);
@@ -1561,7 +1583,7 @@ public class DataSciencer extends HttpServlet {
 													+ arq3.getLinhaToda());
 											if (frase1.startsWith("Ac"))
 												System.out.print(frase3 + " frase 3 == frase 2 ");
-											// Systen.out.println("adicionado ao P1(joinAll):
+											// Systen.out.println("adicionado ao V7(joinAll):
 											// "+arq1.getLinhaToda()+"\t"+arq2.getLinhaToda()+"\t"+arq3.getLinhaToda());
 											encerrar = true;
 										}
@@ -1828,7 +1850,7 @@ public class DataSciencer extends HttpServlet {
 		return termo;
 	}
 
-	private String gerarStringP4(String termo) {
+	private String gerarStringV4(String termo) {
 		boolean continuar = true;
 		String parte = "";
 		int pos = 0;

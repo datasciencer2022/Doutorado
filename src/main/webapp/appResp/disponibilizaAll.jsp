@@ -144,7 +144,7 @@ function voltar() {
 </form>
 </div>
 <div id="aspect_viewArtifacts_Navigation_list_browse" class="list-group">
-<a class="list-group-item active" href="./datasciencer.do?action=callProjeto1"><span class="h5 list-group-item-heading  h5">Análise de dados</span></a>
+<a class="list-group-item active" href="./datasciencer.do?action=callProjeto1"><span class="h5 list-group-item-heading  h5">Coleta de dados</span></a>
 <a class="list-group-item inactive" href="#"><span class="h5 list-group-item-heading  h5">&nbsp;&nbsp;&nbsp;</span></a>
 <a class="list-group-item active" href="./datasciencer.do?action=callProjeto2"><span class="h5 list-group-item-heading  h5">Preparação de dados</span></a>
 <a class="list-group-item inactive" href="#"><span class="h5 list-group-item-heading  h5">&nbsp;&nbsp;&nbsp;</span></a>
@@ -178,83 +178,11 @@ function voltar() {
 				<form action="./datasciencer.do" method="POST"
 					enctype="multipart/form-data">
 					<input type="hidden" name = "action" value="download">
-					<input type="hidden" name = "fileName" value="/home/riloguser/riloguser.uh-app.com.br/temp/P1_frases_coincidem.xlsx">
-					<input type="submit"  class="btn btn-primary" value="DOWNLOAD">
-				</form>
-				</td>
-				<td align="left">&nbsp;&nbsp;&nbsp;Intersecção de todos (P1)</td>
-			</tr>
-			<tr>
-				<td>&nbsp;</td>
-			</tr>
-			<tr>
-				<td>
-				<form action="./datasciencer.do" method="POST"
-					enctype="multipart/form-data">
-					<input type="hidden" name = "action" value="download">
-					<input type="hidden" name = "fileName" value="/home/riloguser/riloguser.uh-app.com.br/temp/P2_frases_coincidem.xlsx">
-					<input type="submit"  class="btn btn-primary" value="DOWNLOAD">
-				</form>
-				</td>
-				<td align="left">&nbsp;&nbsp;&nbsp;Termos comuns: logs de busca e termos Tesauro (P2)</td>
-			</tr>
-			<tr>
-				<td>&nbsp;</td>
-			</tr>
-			<tr>
-				<td>
-				<form action="./datasciencer.do" method="POST"
-					enctype="multipart/form-data">
-					<input type="hidden" name = "action" value="download">
-					<input type="hidden" name = "fileName" value="/home/riloguser/riloguser.uh-app.com.br/temp/P3_frases_coincidem.xlsx">
-					<input type="submit"  class="btn btn-primary" value="DOWNLOAD">
-				</form>
-				</td>
-				<td align="left">&nbsp;&nbsp;&nbsp;Termos comuns: palavras-chave e termos Tesauro (P3)</td>
-			</tr>
-			<tr>
-				<td>&nbsp;</td>
-			</tr>
-			<tr>
-				<td>
-				<form action="./datasciencer.do" method="POST"
-					enctype="multipart/form-data">
-					<input type="hidden" name = "action" value="download">
-					<input type="hidden" name = "fileName" value="/home/riloguser/riloguser.uh-app.com.br/temp/P4_frases_coincidem.xlsx">
-					<input type="submit"  class="btn btn-primary" value="DOWNLOAD">
-				</form>
-				</td>
-				<td align="left">&nbsp;&nbsp;&nbsp;Palavras comuns: logs de busca e palavras-chave (P4)</td>
-			</tr>
-			<tr>
-				<td>&nbsp;</td>
-			</tr>
-			<!--  agora os exclusivos -->
-			
-			<tr>
-				<td>
-				<form action="./datasciencer.do" method="POST"
-					enctype="multipart/form-data">
-					<input type="hidden" name = "action" value="download">
 					<input type="hidden" name = "fileName" value="/home/riloguser/riloguser.uh-app.com.br/temp/exclusiveLogs.xlsx">
 					<input type="submit"  class="btn btn-primary" value="DOWNLOAD">
 				</form>
 				</td>
-				<td align="left">&nbsp;&nbsp;&nbsp;Palavras exclusivas: logs de busca</td>
-			</tr>
-			<tr>
-				<td>&nbsp;</td>
-			</tr>
-			<tr>
-				<td>
-				<form action="./datasciencer.do" method="POST"
-					enctype="multipart/form-data">
-					<input type="hidden" name = "action" value="download">
-					<input type="hidden" name = "fileName" value="/home/riloguser/riloguser.uh-app.com.br/temp/exclusivePalavrasChave.xlsx">
-					<input type="submit"  class="btn btn-primary" value="DOWNLOAD">
-				</form>
-				</td>
-				<td align="left">&nbsp;&nbsp;&nbsp;Palavras exclusivas: palavras-chave</td>
+				<td align="left">&nbsp;&nbsp;&nbsp;Palavras exclusivas: logs de busca (V1)</td>
 			</tr>
 			<tr>
 				<td>&nbsp;</td>
@@ -268,7 +196,80 @@ function voltar() {
 					<input type="submit"  class="btn btn-primary" value="DOWNLOAD">
 				</form>
 				</td>
-				<td align="left">&nbsp;&nbsp;&nbsp;Termos exclusivos: Tesauro</td>
+				<td align="left">&nbsp;&nbsp;&nbsp;Termos exclusivos: Tesauro (V2)</td>
+			</tr>
+			<tr>
+				<td>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>
+				<form action="./datasciencer.do" method="POST"
+					enctype="multipart/form-data">
+					<input type="hidden" name = "action" value="download">
+					<input type="hidden" name = "fileName" value="/home/riloguser/riloguser.uh-app.com.br/temp/exclusivePalavrasChave.xlsx">
+					<input type="submit"  class="btn btn-primary" value="DOWNLOAD">
+				</form>
+				</td>
+				<td align="left">&nbsp;&nbsp;&nbsp;Palavras exclusivas: palavras-chave (V3)</td>
+			</tr>
+			<tr>
+				<td>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>
+				<form action="./datasciencer.do" method="POST"
+					enctype="multipart/form-data">
+					<input type="hidden" name = "action" value="download">
+					<input type="hidden" name = "fileName" value="/home/riloguser/riloguser.uh-app.com.br/temp/P4_frases_coincidem.xlsx">
+					<input type="submit"  class="btn btn-primary" value="DOWNLOAD">
+				</form>
+				</td>
+				<td align="left">&nbsp;&nbsp;&nbsp;Palavras comuns: logs de busca e palavras-chave (V4)</td>
+			</tr>
+			<tr>
+				<td>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>
+				<form action="./datasciencer.do" method="POST"
+					enctype="multipart/form-data">
+					<input type="hidden" name = "action" value="download">
+					<input type="hidden" name = "fileName" value="/home/riloguser/riloguser.uh-app.com.br/temp/P2_frases_coincidem.xlsx">
+					<input type="submit"  class="btn btn-primary" value="DOWNLOAD">
+				</form>
+				</td>
+				<td align="left">&nbsp;&nbsp;&nbsp;Termos comuns: logs de busca e termos Tesauro (V5)</td>
+			</tr>
+			<tr>
+				<td>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>
+				<form action="./datasciencer.do" method="POST"
+					enctype="multipart/form-data">
+					<input type="hidden" name = "action" value="download">
+					<input type="hidden" name = "fileName" value="/home/riloguser/riloguser.uh-app.com.br/temp/P3_frases_coincidem.xlsx">
+					<input type="submit"  class="btn btn-primary" value="DOWNLOAD">
+				</form>
+				</td>
+				<td align="left">&nbsp;&nbsp;&nbsp;Termos comuns: palavras-chave e termos Tesauro (V6)</td>
+			</tr>
+			<tr>
+				<td>&nbsp;</td>
+			</tr>
+			<tr>
+				<td>
+				<form action="./datasciencer.do" method="POST"
+					enctype="multipart/form-data">
+					<input type="hidden" name = "action" value="download">
+					<input type="hidden" name = "fileName" value="/home/riloguser/riloguser.uh-app.com.br/temp/P1_frases_coincidem.xlsx">
+					<input type="submit"  class="btn btn-primary" value="DOWNLOAD">
+				</form>
+				</td>
+				<td align="left">&nbsp;&nbsp;&nbsp;Intersecção de todos (V7)</td>
+			</tr>
+			<tr>
+				<td>&nbsp;</td>
 			</tr>
 		</table>
 </center>

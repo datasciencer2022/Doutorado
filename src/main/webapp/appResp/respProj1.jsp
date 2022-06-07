@@ -18,6 +18,11 @@ List<String> termosExclusivos = new ArrayList<String>();
 if (request.getAttribute("termosExclusivos") != null){
 	termosExclusivos = (List<String>) request.getAttribute("termosExclusivos");
 }
+
+String typeResult = "";
+if (request.getAttribute("typeResult") != null){
+	typeResult = (String) request.getAttribute("typeResult");
+}
 %>
 <!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="pt-br"> <![endif]-->
 <!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="pt-br"> <![endif]-->
@@ -172,7 +177,7 @@ function voltar() {
 <a class="list-group-item active" href="javascript:voltar()"><span class="h5 list-group-item-heading  h5">Voltar</span></a>
 </div>
 <div align="left">
-<img src = "./images/figuraSite.png" width="120%" heigth="120%">
+<img src = "./images/figuraSite.png" width="100%" heigth="100%">
 </div>
 
 <div>
@@ -217,7 +222,7 @@ function voltar() {
 		%>
 		<table name="tabela">
 			<tr>
-				<td style="font-weight:bold"><h5>TERMOS COINCIDENTES</h5></td>
+				<td style="font-weight:bold"><h5><%= typeResult.equals("V4")?"PALAVRAS":"TERMOS"%> COINCIDENTES</h5></td>
 			</tr>
 			<tr>
 				<td>&nbsp;</td>
@@ -237,7 +242,7 @@ function voltar() {
 	%>
 		<table name="tabela">
 		<tr>
-			<td style="font-weight:bold"><h5>TERMOS EXCLUSIVOS</h5></td>
+			<td style="font-weight:bold"><h5><%= typeResult.equals("exclusiveTesauro")?"TERMOS EXCLUSIVOS":"PALAVRAS EXCLUSIVAS" %></h5></td>
 		</tr>
 		<tr>
 			<td>&nbsp;</td>
