@@ -148,11 +148,11 @@
 <a class="list-group-item active" href="./datasciencer.do?action=disponibilizaAll"><span class="h5 list-group-item-heading  h5">Dados completos analisados</span></a>
 </div>
 <div align="left">
-<img src = "./images/figuraSite.png" width="120%" heigth="120%"></br>
+<img src = "./images/figuraSite.png" width="100%" heigth="100%"></br>
 <center>
 <a href="https://www.youtube.com/watch?v=opo65F4iRBw">
 Tutorial:</br>
-<img src = "./images/logoYouTube.png" width="120%" heigth="120%">
+<img src = "./images/logoYouTube.png" width="100%" heigth="100%">
 </a>
 </center>
 </div>
