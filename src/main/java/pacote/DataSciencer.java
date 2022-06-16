@@ -532,7 +532,7 @@ public class DataSciencer extends HttpServlet {
 
 			Integer rand = (int) (10000000 + Math.random() * 90000000);
 
-			if (typeResult.startsWith("P")) {
+			if (typeResult.startsWith("V")) {
 				XSSFWorkbook workbook = new XSSFWorkbook();
 				XSSFSheet sheetResult = workbook.createSheet("Resultados");
 
