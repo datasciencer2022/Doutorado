@@ -271,6 +271,20 @@ function voltar() {
 			<tr>
 				<td>&nbsp;</td>
 			</tr>
+			<tr>
+				<td>
+				<form action="./datasciencer.do" method="POST"
+					enctype="multipart/form-data">
+					<input type="hidden" name = "action" value="download">
+					<input type="hidden" name = "fileName" value="/home/riloguser/riloguser.uh-app.com.br/temp/Palavras-chave_dos_autores_e_a_quantidade_de_documentos_representativos.xlsx">
+					<input type="submit"  class="btn btn-primary" value="DOWNLOAD">
+				</form>
+				</td>
+				<td align="left">&nbsp;&nbsp;&nbsp;Palavras-chave que recuperaram mais de 100 documentos</td>
+			</tr>
+			<tr>
+				<td>&nbsp;</td>
+			</tr>
 		</table>
 </center>
 </div>
