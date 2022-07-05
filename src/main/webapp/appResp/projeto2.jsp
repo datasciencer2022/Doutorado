@@ -143,7 +143,7 @@ function voltar() {
 </form>
 </div>
 <div id="aspect_viewArtifacts_Navigation_list_browse" class="list-group">
-<a class="list-group-item active" href="./datasciencer.do?action=callProjeto1"><span class="h5 list-group-item-heading  h5">Coleta de dados</span></a>
+<a class="list-group-item active" href="./datasciencer.do?action=callProjeto1"><span class="h5 list-group-item-heading  h5">Carregamento de dados</span></a>
 <a class="list-group-item inactive" href="#"><span class="h5 list-group-item-heading  h5">&nbsp;&nbsp;&nbsp;</span></a>
 <a class="list-group-item active" href="./datasciencer.do?action=disponibilizaAll"><span class="h5 list-group-item-heading  h5">Dados completos analisados</span></a>
 <a class="list-group-item inactive" href="#"><span class="h5 list-group-item-heading  h5">&nbsp;&nbsp;&nbsp;</span></a>
@@ -165,7 +165,7 @@ function voltar() {
 <div class="col-xs-12 col-sm-12 col-md-9 main-content">
 <div>
 <center>
-<h4>Preparação de Dados</h4>
+<h4>Limpeza de Dados</h4>
 <hr>
 	<form name="frmDataSciencer01" action="./datasciencer.do" method="POST"
             	enctype="multipart/form-data">

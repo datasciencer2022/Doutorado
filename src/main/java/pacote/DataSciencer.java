@@ -422,6 +422,11 @@ public class DataSciencer extends HttpServlet {
 
 		else if (action.equals("parteUpload")) {
 			String titulo1 = "", titulo2 = "", titulo3 = "";
+			
+			if (logs == null) logs = "/home/riloguser/riloguser.uh-app.com.br/temp/balanced_logs.xlsx";
+			if (palavrasChave == null) palavrasChave = "/home/riloguser/riloguser.uh-app.com.br/temp/balanced_palavras-chave.xlsx";
+			if (tesauro == null) tesauro = "/home/riloguser/riloguser.uh-app.com.br/temp/balanced_tesauro.xlsx";
+			
 			if (typeResult.equals("V7") || typeResult.equals("V4")) {
 				registro1 = lerArq(logs);
 				titulo1 = logs.substring(45);

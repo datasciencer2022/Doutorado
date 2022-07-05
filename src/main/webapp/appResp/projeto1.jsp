@@ -145,7 +145,7 @@ function voltar() {
 </form>
 </div>
 <div id="aspect_viewArtifacts_Navigation_list_browse" class="list-group">
-<a class="list-group-item active" href="./datasciencer.do?action=callProjeto2"><span class="h5 list-group-item-heading  h5">Preparação de dados</span></a>
+<a class="list-group-item active" href="./datasciencer.do?action=callProjeto2"><span class="h5 list-group-item-heading  h5">Limpeza de dados</span></a>
 <a class="list-group-item inactive" href="#"><span class="h5 list-group-item-heading  h5">&nbsp;&nbsp;&nbsp;</span></a>
 <a class="list-group-item active" href="./datasciencer.do?action=disponibilizaAll"><span class="h5 list-group-item-heading  h5">Dados completos analisados</span></a>
 <a class="list-group-item inactive" href="#"><span class="h5 list-group-item-heading  h5">&nbsp;&nbsp;&nbsp;</span></a>
@@ -171,7 +171,7 @@ function voltar() {
 <div class="col-xs-12 col-sm-12 col-md-9 main-content">
 <div>
 <center>
-<h4>Preparação de dados</h4>
+<h4>Carregamento de dados</h4>
 <hr>
 
 <form name="frmDataSciencer01" action="./datasciencer.do" method="POST"
@@ -187,7 +187,7 @@ function voltar() {
                                               Coleta de logs de buscas:
                                            </td>
                                            <td>
-                                                   <input type="file" name="logs" class="btn btn-outline-primary" required>
+                                                   <input type="file" name="logs" class="btn btn-outline-primary">
                                            </td>
                                         </tr>
                                         
@@ -196,7 +196,7 @@ function voltar() {
                                               Coleta de palavras-chave de autores:
                                            </td>
                                            <td>
-                                                   <input type="file" name="palavrasChave"  class="btn btn-outline-primary" required>
+                                                   <input type="file" name="palavrasChave"  class="btn btn-outline-primary">
                                            </td>
                                         </tr>
                                         
@@ -205,7 +205,7 @@ function voltar() {
                                               Coleta de termos do Tesauro:
                                            </td>
                                            <td>
-                                                   <input type="file" name="tesauro"  class="btn btn-outline-primary" required>
+                                                   <input type="file" name="tesauro"  class="btn btn-outline-primary">
                                            </td>
                                         </tr>
                                     
