@@ -163,7 +163,7 @@ function voltar() {
 <p>Os produtos das comparações entre as listas viabilizam a identificação de conjuntos compostos por elementos comuns, nomeados no diagrama: V4, V5, V6 e V7.
 </p>
 <img src = "./images/figuraSite.png" width="100%" heigth="100%">
-<p>Onde V7 corresponde à compatibilização dos três conjuntos; V5 corresponde aos termos comuns apenas ao Tesauro e ao vocabulário dos usuários; V6 aos termos comuns apenas ao Tesauro e às palavras-chave dos autores e V4 aos termos comuns apenas às palavras-chave dos autores e aos termos de busca dos usuários.</p>
+<p>Onde V7 corresponde à compatibilização dos três conjuntos; V5 corresponde aos termos comuns apenas ao Tesauro e ao vocabulário dos usuários; V6 aos termos comuns apenas ao Tesauro e às palavras-chave dos autores e V4 as palavras comuns empregadas pelos autores e as palavras de busca dos usuários.</p>
 </div>
 
 </div>
@@ -184,7 +184,7 @@ function voltar() {
                                                                     
                                     <tr>	                                            
 							   			  <td>	                                                   
-                                              Coleta de logs de buscas:
+                                              Arquivo de logs de buscas:
                                            </td>
                                            <td>
                                                    <input type="file" name="logs" class="btn btn-outline-primary">
@@ -193,7 +193,7 @@ function voltar() {
                                         
                                         <tr>	                                            
 							   			   <td>	                                                   
-                                              Coleta de palavras-chave de autores:
+                                              Arquivo de palavras-chave de autores:
                                            </td>
                                            <td>
                                                    <input type="file" name="palavrasChave"  class="btn btn-outline-primary">
@@ -202,7 +202,7 @@ function voltar() {
                                         
                                         <tr>	                                            
 							   				<td>	                                                   
-                                              Coleta de termos do Tesauro:
+                                              Arquivo de termos do Tesauro:
                                            </td>
                                            <td>
                                                    <input type="file" name="tesauro"  class="btn btn-outline-primary">

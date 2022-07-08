@@ -185,7 +185,7 @@ function voltar() {
                                     </tr>
                                     <tr>	                                            
 							   			  <td>	                                                   
-                                              Retirada dos caracteres inválidos em cada termo:</br>
+                                              Retirada dos caracteres inválidos em cada registro:</br>
                                               <input type="file" name="arqCaracteresInvalid">
                                            </td>
                                            <td>
@@ -194,7 +194,7 @@ function voltar() {
                                     </tr>
                                     <tr>	                                            
 							   			  <td>	                                                   
-                                              Retirada dos termos que contenham palavras inválidas:</br>
+                                              Retirada dos registros que contenham palavras inválidas:</br>
                                               <input type="file" name="arqPalavrasInvalid">
                                            </td>
                                            <td>

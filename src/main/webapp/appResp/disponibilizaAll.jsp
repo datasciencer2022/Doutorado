@@ -159,7 +159,7 @@ function voltar() {
 </div>
 </div>
 <div align="justify">
-<p>Organizamos a análise a partir de três listas de vocabulários, cada uma composta por um conjunto de elementos: termos de buscas dos usuários, palavras-chave dos autores e termos do Tesauro Unesp. Os produtos das comparações, seguindo o método foram compostos pelos quantitativos apresentados ao lado, utilizando a ferramenta RILogUser com processamento off-line das listagens de termos:
+<p>Organizamos a análise a partir de três listas de vocabulários, cada uma composta por um conjunto de elementos: termos de buscas dos usuários, palavras-chave dos autores e termos do Tesauro Unesp. Os produtos das comparações, seguindo o método foram compostos pelos quantitativos apresentados ao lado, utilizando a ferramenta RILogUser com processamento off-line das listagens :
 </p>
 </div>
 
