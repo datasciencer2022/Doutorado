@@ -226,7 +226,7 @@ function voltar() {
 %>
 		<table>
 			<tr>
-				<td>Número de termos duplicados:</td>
+				<td>Número de duplicações:</td>
 				<td align="right"><%= numDuplicados %></td>
 			</tr>
 			<tr>
@@ -234,11 +234,11 @@ function voltar() {
 				<td align="right"><%= formatar.format(extensaoMedia) %></td>
 			</tr>
 			<tr>
-				<td>Quantidade maior de palavras encontradas em um termo:</td>
+				<td>Quantidade maior de palavras encontradas em uma linha:</td>
 				<td align="right"><%= qtdMaior %></td>
 			</tr>
 			<tr>
-				<td>Quantidade menor de palavras encontradas em um termo:</td>
+				<td>Quantidade menor de palavras encontradas em uma linha:</td>
 				<td align="right"><%= qtdMenor %></td>
 			</tr>
 		</table>

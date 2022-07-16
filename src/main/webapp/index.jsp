@@ -150,7 +150,7 @@
 <div align="left">
 <img src = "./images/figuraSite.png" width="100%" heigth="100%"></br>
 <center>
-<a href="https://www.youtube.com/watch?v=opo65F4iRBw">
+<a href="https://youtu.be/N2N6Eim8Wz4">
 Tutorial:</br>
 <img src = "./images/logoYouTube.png" width="100%" heigth="100%">
 </a>
@@ -171,17 +171,23 @@ Tutorial:</br>
 <h1>Resumo</h1>
 <br>
 <p>
-</p><p>Os Repositórios Institucionais (RI) têm papel fundamental na divulgação do conhecimento, especialmente das publicações acadêmicas. 
+</p><p>Introdução: Os Repositórios Institucionais (RI) têm papel fundamental na divulgação do conhecimento, especialmente das publicações acadêmicas. 
 </p><p>Executados em diversas plataformas de software, com grande diversidade de sistemas de instalação, configuração e suporte, os RI remodelaram as formas de armazenamento, organização e recuperação de materiais, trazendo maior agilidade para todos esses processos.
-</p><p>No entanto, disponibilizar recursos on-line para recuperação direta dos usuários é desafiador, na medida em que se faz necessário combinar o processo técnico realizado internamente nas bibliotecas com as necessidades dos usuários externos.
-</p><p>Nessa perspectiva, a falta de articulação entre os vocabulários utilizados durante a indexação e os vocabulários utilizados pelos usuários tende a provocar ruídos e fracassos nos processos de busca e recuperação. 
-</p><p>A fim de que a recuperação de documentos ocorra de modo efetivo, faz-se necessário padronizar a indexação, minimizar os ruídos intrínsecos à linguagem natural, como ambiguidades, sinonímias, inadequações de registros e ampliar a convergência entre a linguagem natural dos usuários e os vocabulários controlados disponibilizados no arquivamento e na organização dos repositórios.
-</p><p>Objetivo: analisar os logs de buscas de usuários do Repositório Institucional Unesp para propor atualização do vocabulário controlado Tesauro Unesp.
-</p><p>Metodologia: abordagem mista, qualitativa e quantitativa, classificada quanto aos objetivos como exploratória e descritiva.
+</p><p>No entanto, disponibilizar recursos on-line para recuperação direta dos usuários é desafiador, na medida em que se faz necessário combinar o processo técnico realizado internamente nas bibliotecas com as necessidades dos usuários externos. 
+</p><p>Nessa perspectiva, a falta de articulação entre os vocabulários utilizados durante a indexação e os vocabulários utilizados pelos usuários tende a provocar ruídos e fracassos nos processos de busca e recuperação.  
+</p><p>Objetivo: Em vista disso, esta pesquisa teve como objetivo realizar estudo teórico e metodológico sobre a análise de logs, suas funções e sua utilização para atualização de vocabulários controlados para repositórios institucionais.
+</p><p>Metodologia: A pesquisa se caracteriza como qualitativa e quantitativa e seu desenvolvimento se realizou em duas etapas: pesquisa exploratória e pesquisa descritiva. A pesquisa exploratória utilizou levantamento bibliográfico e análise documental e a pesquisa descritiva focalizou o trabalho com os dados coletados, para realizar análises quantitativas e qualitativas as quais subsidiam o desenvolvimento de uma metodologia empírica para a análise de logs, baseada no modelo teórico de Jansen (2008).
+</p><p>Resultados: O processo descritivo e analítico resultou na proposta metodológica para atualização de vocabulário controlado por meio da análise de logs de busca, implementada na ferramenta computacional desenvolvida nesta Tese: a RILogUser (Institutional Repository for User Log), uma ferramenta capaz da coleta de um grande volume de dados, selecionar dados relevantes e analisar o vocabulário empregado por diferentes agentes de maneira produtiva. 
 </p><p>O corpus é formado pela lista de termos de busca utilizados pelos usuários comparados à listagem de termos pertencentes ao Tesauro Unesp e às palavras-chave atribuídas pelos autores aos materiais indexados no RI Unesp. 
-</p><p>O método proposto foi implementado a partir do modelo teórico proposto por Jansen (2008) em três etapas: coleta, preparação e análise dos logs.
-</p><p>Resultados e Discussão: a análise da lista de termos oriundos dos logs de busca dos usuários comparada a lista de palavras-chave atribuídas pelos autores aos documentos indexados no RI Unesp viabilizou a obtenção de uma lista de expressões de busca contendo palavras simples, palavras compostas e frases as quais compõem lista de 760 termos candidatos à atualização do vocabulário controlado Tesauro Unesp. 
-</p><p>Considerações Finais: a análise de logs se apresentou como fonte confiável de informações, as quais gerenciadas por estratégias computacionais têm amplo potencial para otimizar instrumentos de representação, a fim de beneficiar os processos de busca e, consequentemente, de recuperação de informações. A metodologia apresentada se mostrou eficaz por viabilizar uma grande depuração de expressões de busca de usuários e palavras-chave dos autores que produziu um corpus terminológico consistente proveniente diretamente da linguagem utilizada no RI.</p>
+</p><p>Entre as funcionalidades e características dessa ferramenta, destacam-se:
+	 <ol type="a">
+  		<li>apresentação de uma visão sistemática do processo de análise de logs de buscas dos usuários;</li>
+  		<li>possibilidade de integração com outras listagens de palavras, possibilitando a aplicação em RI diferentes;</li>
+  		<li>apresentação de forma detalhada das etapas com exemplificações e seus respectivos produtos;</li>
+  		<li>possibilidade de criação de vários vocabulários (baseado nos logs de buscas, palavras-chave dos autores e termos do Tesauro Unesp).</li>
+	</ol> 
+ 
+</p>
 <p></p>
 <p>Contato: <a href="mailto:isaque.katahira@fatec.sp.gov.br">isaque.katahira@fatec.sp.gov.br</a>
 </p>
